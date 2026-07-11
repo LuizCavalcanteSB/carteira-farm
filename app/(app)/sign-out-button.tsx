@@ -3,7 +3,13 @@
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
-export function SignOutButton() {
+export function SignOutButton({
+  className,
+  icon,
+}: {
+  className?: string;
+  icon?: React.ReactNode;
+}) {
   const router = useRouter();
 
   return (
@@ -14,8 +20,9 @@ export function SignOutButton() {
         router.push("/login");
         router.refresh();
       }}
-      className="text-zinc-200 hover:text-brand"
+      className={className ?? "text-zinc-200 hover:text-brand"}
     >
+      {icon}
       Sair
     </button>
   );
