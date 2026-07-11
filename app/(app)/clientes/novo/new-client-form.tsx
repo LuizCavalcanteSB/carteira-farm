@@ -1,0 +1,245 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import { createClientRecord } from "./actions";
+import { formatCnpj, isValidCnpjLength, onlyDigits } from "@/lib/cnpj";
+import type { CnpjLookupResult } from "@/lib/cnpj";
+import { PERFIL_COMPRADOR_OPTIONS, PORTE_OPTIONS } from "@/lib/labels";
+
+export function NewClientForm({
+  consultores,
+}: {
+  consultores?: { id: string; nome: string }[];
+}) {
+  const [state, formAction, pending] = useActionState(
+    createClientRecord,
+    undefined,
+  );
+  const [cnpj, setCnpj] = useState("");
+  const [lookup, setLookup] = useState<CnpjLookupResult | null>(null);
+  const [isLooking, setIsLooking] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+
+  async function handleCnpjBlur() {
+    if (!isValidCnpjLength(cnpj)) return;
+    setIsLooking(true);
+    setLookupError(null);
+
+    try {
+      const res = await fetch(`/api/cnpj/${onlyDigits(cnpj)}`);
+      if (!res.ok) {
+        setLookupError("CNPJ não encontrado na Receita Federal.");
+        return;
+      }
+      const data: CnpjLookupResult = await res.json();
+      setLookup(data);
+    } catch {
+      setLookupError("Não foi possível consultar o CNPJ agora.");
+    } finally {
+      setIsLooking(false);
+    }
+  }
+
+  return (
+    <form action={formAction} className="flex flex-col gap-4">
+      <Field label="CNPJ">
+        <input
+          name="cnpj"
+          required
+          value={cnpj}
+          onChange={(e) => setCnpj(formatCnpj(e.target.value))}
+          onBlur={handleCnpjBlur}
+          placeholder="00.000.000/0000-00"
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        />
+        {isLooking && (
+          <p className="mt-1 text-xs text-zinc-500">Consultando Receita Federal...</p>
+        )}
+        {lookupError && (
+          <p className="mt-1 text-xs text-amber-600">{lookupError}</p>
+        )}
+        {lookup && (
+          <p className="mt-1 text-xs text-green-700">
+            Dados encontrados e preenchidos automaticamente.
+          </p>
+        )}
+      </Field>
+
+      <Field label="Nome / apelido do cliente">
+        <input
+          name="nome"
+          required
+          key={lookup?.nome}
+          defaultValue={lookup?.nome ?? ""}
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        />
+      </Field>
+
+      <Field label="Razão social">
+        <input
+          name="razao_social"
+          key={lookup?.razao_social}
+          defaultValue={lookup?.razao_social ?? ""}
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Telefone">
+          <input
+            name="telefone"
+            key={lookup?.telefone}
+            defaultValue={lookup?.telefone ?? ""}
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          />
+        </Field>
+        <Field label="E-mail">
+          <input
+            name="email"
+            type="email"
+            key={lookup?.email}
+            defaultValue={lookup?.email ?? ""}
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          />
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Nome do contato">
+          <input
+            name="contato"
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          />
+        </Field>
+        <Field label="Comprador">
+          <input
+            name="comprador"
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          />
+        </Field>
+      </div>
+
+      <Field label="Endereço">
+        <input
+          name="endereco"
+          key={lookup?.endereco}
+          defaultValue={lookup?.endereco ?? ""}
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Cidade">
+          <input
+            name="cidade"
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          />
+        </Field>
+        <Field label="Segmento / atividade">
+          <input
+            name="segmento"
+            key={lookup?.segmento}
+            defaultValue={lookup?.segmento ?? ""}
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          />
+        </Field>
+      </div>
+
+      <Field label="Situação cadastral">
+        <input
+          name="situacao_cadastral"
+          key={lookup?.situacao_cadastral}
+          defaultValue={lookup?.situacao_cadastral ?? ""}
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        />
+      </Field>
+
+      <Field label="Status">
+        <select
+          name="status"
+          defaultValue="ativo"
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        >
+          <option value="ativo">Ativo</option>
+          <option value="prospeccao">Prospecção</option>
+          <option value="inativo">Inativo</option>
+        </select>
+      </Field>
+
+      <Field label="Perfil do comprador">
+        <select
+          name="perfil_comprador"
+          defaultValue=""
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        >
+          <option value="">Não informado</option>
+          {PERFIL_COMPRADOR_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Porte">
+        <select
+          name="porte"
+          defaultValue=""
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        >
+          <option value="">Não informado</option>
+          {PORTE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      {consultores && (
+        <Field label="Consultor responsável">
+          <select
+            name="consultant_id"
+            required
+            defaultValue=""
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          >
+            <option value="" disabled>
+              Selecione o consultor...
+            </option>
+            {consultores.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nome}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
+
+      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="self-start rounded-md bg-chumbo px-4 py-2 text-sm font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+      >
+        {pending ? "Salvando..." : "Salvar cliente"}
+      </button>
+    </form>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium text-chumbo">{label}</label>
+      {children}
+    </div>
+  );
+}
