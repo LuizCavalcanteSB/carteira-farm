@@ -3,25 +3,29 @@ import { createClient } from "@/lib/supabase/server";
 import { formatCnpj } from "@/lib/cnpj";
 import { formatDateOnly } from "@/lib/date";
 import {
+  ANIVERSARIO_SEM_ALERTA_COLOR,
   ANIVERSARIO_TIER_COLOR,
   bucketUltimoPedido,
   calcularProximoAniversario,
+  MESES_LABEL,
   PERIODO_PEDIDO_LABEL,
   type PeriodoPedido,
 } from "@/lib/alertas";
 import { ConsultorFilter } from "./consultor-filter";
+import { MesFilter } from "./mes-filter";
 
 const PERIODOS: PeriodoPedido[] = ["1", "3", "6", "sem_pedido"];
 
 export default async function AlertasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ periodo?: string; consultor?: string }>;
+  searchParams: Promise<{ periodo?: string; consultor?: string; mes?: string }>;
 }) {
-  const { periodo: periodoParam, consultor } = await searchParams;
+  const { periodo: periodoParam, consultor, mes: mesParam } = await searchParams;
   const periodo: PeriodoPedido = PERIODOS.includes(periodoParam as PeriodoPedido)
     ? (periodoParam as PeriodoPedido)
     : "1";
+  const mes = mesParam && /^([1-9]|1[0-2])$/.test(mesParam) ? Number(mesParam) : null;
 
   const supabase = await createClient();
   const {
@@ -82,16 +86,28 @@ export default async function AlertasPage({
     ]),
   );
 
-  const linhasAniversario = (clients ?? [])
+  const aniversariosTodos = (clients ?? [])
     .filter((c) => c.aniversario_empresa)
     .map((client) => ({
       client,
       info: calcularProximoAniversario(client.aniversario_empresa as string),
-    }))
-    .filter((l) => l.info.tier !== null)
-    .sort((a, b) => a.info.diasRestantes - b.info.diasRestantes);
+    }));
 
-  const baseHref = isAdmin && consultor ? `?consultor=${consultor}&` : "?";
+  const linhasAniversario = mes
+    ? aniversariosTodos
+        .filter((l) => l.info.mes === mes)
+        .sort((a, b) => a.info.dia - b.info.dia)
+    : aniversariosTodos
+        .filter((l) => l.info.tier !== null)
+        .sort((a, b) => a.info.diasRestantes - b.info.diasRestantes);
+
+  function hrefComPeriodo(p: PeriodoPedido) {
+    const params = new URLSearchParams();
+    if (isAdmin && consultor) params.set("consultor", consultor);
+    if (mes) params.set("mes", String(mes));
+    params.set("periodo", p);
+    return `?${params.toString()}`;
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -116,7 +132,7 @@ export default async function AlertasPage({
           {PERIODOS.map((p) => (
             <Link
               key={p}
-              href={`${baseHref}periodo=${p}`}
+              href={hrefComPeriodo(p)}
               className={`rounded-full px-3 py-1.5 text-sm font-medium ${
                 periodo === p
                   ? "bg-chumbo text-brand"
@@ -178,12 +194,19 @@ export default async function AlertasPage({
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold text-chumbo">
-          Aniversários de empresa próximos
-        </h2>
-        <p className="text-sm text-chumbo-light">
-          Clientes com aniversário de fundação nos próximos 60 dias.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-chumbo">
+              Aniversários de empresa {mes ? `em ${MESES_LABEL[mes - 1]}` : "próximos"}
+            </h2>
+            <p className="text-sm text-chumbo-light">
+              {mes
+                ? `Todos os clientes com aniversário de fundação em ${MESES_LABEL[mes - 1]}, em qualquer ano.`
+                : "Clientes com aniversário de fundação nos próximos 60 dias."}
+            </p>
+          </div>
+          <MesFilter defaultMes={mes ? String(mes) : ""} />
+        </div>
 
         <div className="mt-4 overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm">
           <table className="w-full text-sm">
@@ -216,7 +239,9 @@ export default async function AlertasPage({
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${ANIVERSARIO_TIER_COLOR[info.tier!]}`}
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        info.tier ? ANIVERSARIO_TIER_COLOR[info.tier] : ANIVERSARIO_SEM_ALERTA_COLOR
+                      }`}
                     >
                       {info.diasRestantes} dia{info.diasRestantes === 1 ? "" : "s"}
                     </span>
@@ -229,7 +254,9 @@ export default async function AlertasPage({
                     colSpan={isAdmin ? 4 : 3}
                     className="px-4 py-8 text-center text-zinc-400"
                   >
-                    Nenhum aniversário nos próximos 60 dias.
+                    {mes
+                      ? `Nenhum cliente com aniversário em ${MESES_LABEL[mes - 1]}.`
+                      : "Nenhum aniversário nos próximos 60 dias."}
                   </td>
                 </tr>
               )}

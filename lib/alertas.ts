@@ -36,17 +36,26 @@ export type AniversarioInfo = {
   proximaData: Date;
   diasRestantes: number;
   tier: "30" | "45" | "60" | null;
+  mes: number; // 1-12
+  dia: number;
 };
+
+/** Extrai ano/mês/dia de uma coluna `date` (YYYY-MM-DD) sem passar pelo
+ * parsing UTC do `Date`, que causaria shift de -1 dia em fusos negativos. */
+function parseDataOnly(iso: string) {
+  const [year, month, day] = iso.split("-").map(Number);
+  return { year, month, day };
+}
 
 /** Calcula a próxima ocorrência (dia/mês) do aniversário e quantos dias faltam. */
 export function calcularProximoAniversario(dataFundacaoISO: string): AniversarioInfo {
-  const fundacao = new Date(dataFundacaoISO);
+  const { month, day } = parseDataOnly(dataFundacaoISO);
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
-  let proxima = new Date(hoje.getFullYear(), fundacao.getMonth(), fundacao.getDate());
+  let proxima = new Date(hoje.getFullYear(), month - 1, day);
   if (proxima < hoje) {
-    proxima = new Date(hoje.getFullYear() + 1, fundacao.getMonth(), fundacao.getDate());
+    proxima = new Date(hoje.getFullYear() + 1, month - 1, day);
   }
 
   const diasRestantes = Math.round(
@@ -58,7 +67,7 @@ export function calcularProximoAniversario(dataFundacaoISO: string): Aniversario
   else if (diasRestantes <= 45) tier = "45";
   else if (diasRestantes <= 60) tier = "60";
 
-  return { proximaData: proxima, diasRestantes, tier };
+  return { proximaData: proxima, diasRestantes, tier, mes: month, dia: day };
 }
 
 export const ANIVERSARIO_TIER_COLOR: Record<string, string> = {
@@ -66,3 +75,20 @@ export const ANIVERSARIO_TIER_COLOR: Record<string, string> = {
   "45": "bg-orange-100 text-orange-800",
   "60": "bg-amber-100 text-amber-800",
 };
+
+export const ANIVERSARIO_SEM_ALERTA_COLOR = "bg-zinc-100 text-zinc-600";
+
+export const MESES_LABEL = [
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
+];
