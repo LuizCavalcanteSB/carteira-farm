@@ -131,7 +131,27 @@ create table public.metas_mensais (
   unique (consultant_id, ano, mes)
 );
 
--- 8. View com estatísticas agregadas por cliente (nº de pedidos, total
+-- 8. Painel diário — quadro do time inteiro, visível e editável por todos os
+-- autenticados (não é escopado por consultor como o resto do app).
+create table public.painel_diario_meta (
+  data date primary key,
+  meta_diaria numeric(12, 2) not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+create table public.painel_diario_consultor (
+  id uuid primary key default gen_random_uuid(),
+  consultant_id uuid not null references public.profiles (id),
+  data date not null default current_date,
+  meta_individual numeric(12, 2) not null default 0,
+  vtv numeric(12, 2) not null default 0,
+  quantidade_vendas int not null default 0,
+  ligacoes int not null default 0,
+  updated_at timestamptz not null default now(),
+  unique (consultant_id, data)
+);
+
+-- 9. View com estatísticas agregadas por cliente (nº de pedidos, total
 -- comprado, ticket médio, data do último pedido). security_invoker faz a view
 -- rodar com as permissões de quem consulta, então a RLS de `orders` continua
 -- valendo (um consultor não enxerga o agregado de clientes de outro).
@@ -182,6 +202,8 @@ alter table public.client_notes enable row level security;
 alter table public.order_photos enable row level security;
 alter table public.client_links enable row level security;
 alter table public.metas_mensais enable row level security;
+alter table public.painel_diario_meta enable row level security;
+alter table public.painel_diario_consultor enable row level security;
 
 -- helper: papel do usuário logado
 create function public.current_role()
@@ -268,6 +290,20 @@ create policy "metas_all_own_or_admin"
   to authenticated
   using (consultant_id = auth.uid() or public.current_role() = 'admin')
   with check (consultant_id = auth.uid() or public.current_role() = 'admin');
+
+-- painel_diario_*: quadro do time inteiro — qualquer autenticado vê e edita
+-- qualquer linha (não é escopado por dono, ao contrário do resto do app).
+create policy "painel_meta_all_authenticated"
+  on public.painel_diario_meta for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create policy "painel_consultor_all_authenticated"
+  on public.painel_diario_consultor for all
+  to authenticated
+  using (true)
+  with check (true);
 
 -- orders / client_notes / order_photos: acesso segue o dono do cliente pai.
 create policy "orders_all_own_or_admin"

@@ -88,3 +88,14 @@ export type ClientLink = {
   descricao: string | null;
   created_at: string;
 };
+
+export type PainelDiarioConsultor = {
+  id: string;
+  consultant_id: string;
+  data: string;
+  meta_individual: number;
+  vtv: number;
+  quantidade_vendas: number;
+  ligacoes: number;
+  updated_at: string;
+};

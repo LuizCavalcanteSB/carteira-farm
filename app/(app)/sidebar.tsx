@@ -9,6 +9,7 @@ import {
   Upload,
   Users,
   Bell,
+  Target,
   LogOut,
   Menu,
   X,
@@ -19,6 +20,7 @@ type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/painel", label: "Painel do dia", icon: Target },
   { href: "/clientes/novo", label: "Novo cliente", icon: UserPlus },
   { href: "/importar", label: "Importar planilha", icon: Upload },
   { href: "/alertas", label: "Alertas", icon: Bell },
