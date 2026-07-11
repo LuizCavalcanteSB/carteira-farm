@@ -8,6 +8,7 @@ import {
   UserPlus,
   Upload,
   Users,
+  Bell,
   LogOut,
   Menu,
   X,
@@ -20,6 +21,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/clientes/novo", label: "Novo cliente", icon: UserPlus },
   { href: "/importar", label: "Importar planilha", icon: Upload },
+  { href: "/alertas", label: "Alertas", icon: Bell },
 ];
 
 function SidebarContent({

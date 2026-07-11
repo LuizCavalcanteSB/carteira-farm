@@ -49,7 +49,8 @@ export default async function ImportPage() {
         <code>comprador</code>, <code>segmento</code>, <code>cidade</code>,{" "}
         <code>status</code>, <code>perfil</code>, <code>porte</code>,{" "}
         <code>qtd compras</code>, <code>faturamento total</code>,{" "}
-        <code>1a compra</code>, <code>última compra</code>. Só o CNPJ é
+        <code>1a compra</code>, <code>última compra</code>,{" "}
+        <code>aniversário</code> (data de fundação da empresa). Só o CNPJ é
         obrigatório — o resto é completado automaticamente pela Receita
         Federal quando estiver em branco.
       </p>

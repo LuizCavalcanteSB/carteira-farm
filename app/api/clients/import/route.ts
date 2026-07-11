@@ -19,6 +19,7 @@ type ImportRow = {
   faturamento_total?: string;
   primeira_compra?: string;
   ultima_compra?: string;
+  aniversario_empresa?: string;
   consultor?: string;
 };
 
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase
       .from("clients")
       .select(
-        "id, cidade, comprador, historico_qtd_compras, historico_faturamento_total, historico_primeira_compra, historico_ultima_compra",
+        "id, cidade, comprador, historico_qtd_compras, historico_faturamento_total, historico_primeira_compra, historico_ultima_compra, aniversario_empresa",
       )
       .eq("cnpj", cnpj)
       .maybeSingle();
@@ -182,6 +183,9 @@ export async function POST(request: Request) {
       : (existing?.historico_ultima_compra ?? null);
     const cidade = row.cidade?.trim() || existing?.cidade || null;
     const comprador = row.comprador?.trim() || existing?.comprador || null;
+    const aniversarioEmpresa = isValidISODate(row.aniversario_empresa)
+      ? row.aniversario_empresa
+      : (existing?.aniversario_empresa ?? null);
 
     const { error } = await supabase.from("clients").upsert(
       {
@@ -205,6 +209,7 @@ export async function POST(request: Request) {
         historico_faturamento_total: faturamentoTotal,
         historico_primeira_compra: primeiraCompra,
         historico_ultima_compra: ultimaCompra,
+        aniversario_empresa: aniversarioEmpresa,
         consultant_id: consultantId,
       },
       { onConflict: "cnpj" },

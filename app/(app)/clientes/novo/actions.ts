@@ -48,6 +48,8 @@ export async function createClientRecord(
       status: String(formData.get("status") ?? "ativo"),
       perfil_comprador: String(formData.get("perfil_comprador") ?? "") || null,
       porte: String(formData.get("porte") ?? "") || null,
+      aniversario_empresa:
+        String(formData.get("aniversario_empresa") ?? "") || null,
       consultant_id: consultantId,
     })
     .select("id")

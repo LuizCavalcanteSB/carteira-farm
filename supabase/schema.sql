@@ -61,6 +61,9 @@ create table public.clients (
   historico_faturamento_total numeric(12, 2) not null default 0,
   historico_primeira_compra date,
   historico_ultima_compra date,
+  -- data de fundação/aniversário da empresa cliente (dia/mês se repete todo
+  -- ano; usado para avisar quando o aniversário estiver chegando perto)
+  aniversario_empresa date,
   consultant_id uuid not null references public.profiles (id),
   created_at timestamptz not null default now()
 );

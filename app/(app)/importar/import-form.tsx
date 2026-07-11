@@ -19,6 +19,7 @@ type ParsedRow = {
   faturamento_total?: string;
   primeira_compra?: string;
   ultima_compra?: string;
+  aniversario_empresa?: string;
   consultor?: string;
 };
 
@@ -93,6 +94,13 @@ export function ImportForm() {
             k.includes("compra")
           )
             entry.ultima_compra = toISODateString(value);
+          else if (
+            k.includes("aniversario") ||
+            k.includes("aniversário") ||
+            k.includes("fundacao") ||
+            k.includes("fundação")
+          )
+            entry.aniversario_empresa = toISODateString(value);
           else if (
             k.includes("consultor") ||
             k.includes("usuario") ||

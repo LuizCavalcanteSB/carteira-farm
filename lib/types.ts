@@ -50,6 +50,7 @@ export type Client = {
   historico_faturamento_total: number;
   historico_primeira_compra: string | null;
   historico_ultima_compra: string | null;
+  aniversario_empresa: string | null;
   consultant_id: string;
   created_at: string;
 };

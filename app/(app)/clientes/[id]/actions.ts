@@ -80,3 +80,16 @@ export async function deleteLink(clientId: string, linkId: string) {
   await supabase.from("client_links").delete().eq("id", linkId);
   revalidatePath(`/clientes/${clientId}`);
 }
+
+export async function setAniversario(clientId: string, data: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clients")
+    .update({ aniversario_empresa: data || null })
+    .eq("id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  return { error: null };
+}

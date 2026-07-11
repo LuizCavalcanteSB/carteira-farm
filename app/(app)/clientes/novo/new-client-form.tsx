@@ -196,6 +196,14 @@ export function NewClientForm({
         </select>
       </Field>
 
+      <Field label="Data de aniversário da empresa">
+        <input
+          type="date"
+          name="aniversario_empresa"
+          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+        />
+      </Field>
+
       {consultores && (
         <Field label="Consultor responsável">
           <select

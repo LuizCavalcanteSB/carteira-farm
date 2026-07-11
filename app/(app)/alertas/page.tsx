@@ -1,0 +1,243 @@
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { formatCnpj } from "@/lib/cnpj";
+import {
+  ANIVERSARIO_TIER_COLOR,
+  bucketUltimoPedido,
+  calcularProximoAniversario,
+  PERIODO_PEDIDO_LABEL,
+  type PeriodoPedido,
+} from "@/lib/alertas";
+import { ConsultorFilter } from "./consultor-filter";
+
+const PERIODOS: PeriodoPedido[] = ["1", "3", "6", "sem_pedido"];
+
+export default async function AlertasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ periodo?: string; consultor?: string }>;
+}) {
+  const { periodo: periodoParam, consultor } = await searchParams;
+  const periodo: PeriodoPedido = PERIODOS.includes(periodoParam as PeriodoPedido)
+    ? (periodoParam as PeriodoPedido)
+    : "1";
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single();
+
+  const isAdmin = profile?.role === "admin";
+
+  const consultores = isAdmin
+    ? (await supabase.from("profiles").select("id, nome").order("nome")).data ?? []
+    : [];
+  const consultorNomeById = new Map(consultores.map((c) => [c.id, c.nome]));
+
+  let clientQuery = supabase
+    .from("clients")
+    .select("id, nome, cnpj, status, consultant_id, aniversario_empresa")
+    .order("nome");
+
+  if (isAdmin && consultor) {
+    clientQuery = clientQuery.eq("consultant_id", consultor);
+  }
+
+  const { data: clients } = await clientQuery;
+  const clientIds = (clients ?? []).map((c) => c.id);
+
+  const { data: stats } = clientIds.length
+    ? await supabase
+        .from("client_stats")
+        .select("client_id, ultimo_pedido")
+        .in("client_id", clientIds)
+    : { data: [] };
+
+  const ultimoPedidoByClient = new Map(
+    (stats ?? []).map((s) => [s.client_id, s.ultimo_pedido]),
+  );
+
+  const linhasPedidos = (clients ?? [])
+    .map((client) => {
+      const ultimoPedido = ultimoPedidoByClient.get(client.id) ?? null;
+      const bucket = bucketUltimoPedido(client.status, ultimoPedido);
+      return { client, ultimoPedido, bucket };
+    })
+    .filter((l) => l.bucket === periodo);
+
+  const contagens = Object.fromEntries(
+    PERIODOS.map((p) => [
+      p,
+      (clients ?? []).filter(
+        (c) =>
+          bucketUltimoPedido(c.status, ultimoPedidoByClient.get(c.id) ?? null) === p,
+      ).length,
+    ]),
+  );
+
+  const linhasAniversario = (clients ?? [])
+    .filter((c) => c.aniversario_empresa)
+    .map((client) => ({
+      client,
+      info: calcularProximoAniversario(client.aniversario_empresa as string),
+    }))
+    .filter((l) => l.info.tier !== null)
+    .sort((a, b) => a.info.diasRestantes - b.info.diasRestantes);
+
+  const baseHref = isAdmin && consultor ? `?consultor=${consultor}&` : "?";
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-2xl font-semibold text-chumbo">Alertas</h1>
+        <p className="text-sm text-chumbo-light">
+          Clientes que precisam de atenção: sem pedido recente ou com
+          aniversário de empresa chegando.
+        </p>
+      </div>
+
+      {isAdmin && (
+        <ConsultorFilter
+          defaultConsultor={consultor ?? ""}
+          consultores={consultores}
+        />
+      )}
+
+      <section>
+        <h2 className="text-lg font-semibold text-chumbo">Pedidos parados</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {PERIODOS.map((p) => (
+            <Link
+              key={p}
+              href={`${baseHref}periodo=${p}`}
+              className={`rounded-full px-3 py-1.5 text-sm font-medium ${
+                periodo === p
+                  ? "bg-chumbo text-brand"
+                  : "border border-chumbo/20 bg-white text-chumbo hover:bg-zinc-50"
+              }`}
+            >
+              {PERIODO_PEDIDO_LABEL[p]} ({contagens[p] ?? 0})
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-4 overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">Cliente</th>
+                <th className="px-4 py-3">CNPJ</th>
+                {isAdmin && <th className="px-4 py-3">Consultor</th>}
+                <th className="px-4 py-3">Último pedido</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {linhasPedidos.map(({ client, ultimoPedido }) => (
+                <tr key={client.id} className="hover:bg-zinc-50">
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/clientes/${client.id}`}
+                      className="font-medium text-zinc-900 hover:underline"
+                    >
+                      {client.nome}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-zinc-600">
+                    {formatCnpj(client.cnpj)}
+                  </td>
+                  {isAdmin && (
+                    <td className="px-4 py-3 text-zinc-600">
+                      {consultorNomeById.get(client.consultant_id) ?? "—"}
+                    </td>
+                  )}
+                  <td className="px-4 py-3 text-zinc-600">
+                    {ultimoPedido
+                      ? new Date(ultimoPedido).toLocaleDateString("pt-BR")
+                      : "—"}
+                  </td>
+                </tr>
+              ))}
+              {linhasPedidos.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={isAdmin ? 4 : 3}
+                    className="px-4 py-8 text-center text-zinc-400"
+                  >
+                    Nenhum cliente nessa faixa.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold text-chumbo">
+          Aniversários de empresa próximos
+        </h2>
+        <p className="text-sm text-chumbo-light">
+          Clientes com aniversário de fundação nos próximos 60 dias.
+        </p>
+
+        <div className="mt-4 overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">Cliente</th>
+                {isAdmin && <th className="px-4 py-3">Consultor</th>}
+                <th className="px-4 py-3">Data</th>
+                <th className="px-4 py-3">Faltam</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {linhasAniversario.map(({ client, info }) => (
+                <tr key={client.id} className="hover:bg-zinc-50">
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/clientes/${client.id}`}
+                      className="font-medium text-zinc-900 hover:underline"
+                    >
+                      {client.nome}
+                    </Link>
+                  </td>
+                  {isAdmin && (
+                    <td className="px-4 py-3 text-zinc-600">
+                      {consultorNomeById.get(client.consultant_id) ?? "—"}
+                    </td>
+                  )}
+                  <td className="px-4 py-3 text-zinc-600">
+                    {info.proximaData.toLocaleDateString("pt-BR")}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${ANIVERSARIO_TIER_COLOR[info.tier!]}`}
+                    >
+                      {info.diasRestantes} dia{info.diasRestantes === 1 ? "" : "s"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {linhasAniversario.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={isAdmin ? 4 : 3}
+                    className="px-4 py-8 text-center text-zinc-400"
+                  >
+                    Nenhum aniversário nos próximos 60 dias.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}

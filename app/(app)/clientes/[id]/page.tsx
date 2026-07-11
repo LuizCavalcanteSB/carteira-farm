@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatCnpj } from "@/lib/cnpj";
 import { ClientTabs } from "./client-tabs";
+import { BirthdayEditor } from "./birthday-editor";
 import type { ClientStatus, PerfilComprador, Porte } from "@/lib/types";
 import { PERFIL_COMPRADOR_LABEL, PORTE_LABEL } from "@/lib/labels";
 
@@ -141,6 +142,10 @@ export default async function ClientPage({
           value={client.porte ? PORTE_LABEL[client.porte as Porte] : null}
         />
         <Field label="Consultor responsável" value={consultor?.nome} />
+        <BirthdayEditor
+          clientId={client.id}
+          aniversarioEmpresa={client.aniversario_empresa}
+        />
       </div>
 
       <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
