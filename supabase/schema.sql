@@ -105,7 +105,18 @@ create table public.order_photos (
 
 create index order_photos_client_id_idx on public.order_photos (client_id);
 
--- 6. Metas mensais de vendas por consultor
+-- 6. Links do Bitrix (CRM interno) — um cliente pode ter vários
+create table public.client_links (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references public.clients (id) on delete cascade,
+  url text not null,
+  descricao text,
+  created_at timestamptz not null default now()
+);
+
+create index client_links_client_id_idx on public.client_links (client_id);
+
+-- 7. Metas mensais de vendas por consultor
 create table public.metas_mensais (
   id uuid primary key default gen_random_uuid(),
   consultant_id uuid not null references public.profiles (id),
@@ -117,7 +128,7 @@ create table public.metas_mensais (
   unique (consultant_id, ano, mes)
 );
 
--- 7. View com estatísticas agregadas por cliente (nº de pedidos, total
+-- 8. View com estatísticas agregadas por cliente (nº de pedidos, total
 -- comprado, ticket médio, data do último pedido). security_invoker faz a view
 -- rodar com as permissões de quem consulta, então a RLS de `orders` continua
 -- valendo (um consultor não enxerga o agregado de clientes de outro).
@@ -147,6 +158,7 @@ alter table public.clients enable row level security;
 alter table public.orders enable row level security;
 alter table public.client_notes enable row level security;
 alter table public.order_photos enable row level security;
+alter table public.client_links enable row level security;
 alter table public.metas_mensais enable row level security;
 
 -- helper: papel do usuário logado
@@ -286,6 +298,24 @@ create policy "photos_all_own_or_admin"
     exists (
       select 1 from public.clients c
       where c.id = order_photos.client_id
+        and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
+    )
+  );
+
+create policy "links_all_own_or_admin"
+  on public.client_links for all
+  to authenticated
+  using (
+    exists (
+      select 1 from public.clients c
+      where c.id = client_links.client_id
+        and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.clients c
+      where c.id = client_links.client_id
         and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
     )
   );

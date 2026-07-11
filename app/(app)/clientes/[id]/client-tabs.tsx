@@ -2,19 +2,27 @@
 
 import { useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { addNote, addOrder, deletePhoto, registerPhoto } from "./actions";
-import type { ClientNote, Order, OrderPhoto } from "@/lib/types";
+import {
+  addLink,
+  addNote,
+  addOrder,
+  deleteLink,
+  deletePhoto,
+  registerPhoto,
+} from "./actions";
+import type { ClientLink, ClientNote, Order, OrderPhoto } from "@/lib/types";
 
 type NoteWithAuthor = ClientNote & { author: { nome: string } | null };
 type PhotoWithUrl = OrderPhoto & { url: string | null };
 
-const TABS = ["observacoes", "pedidos", "fotos"] as const;
+const TABS = ["observacoes", "pedidos", "fotos", "links"] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_LABEL: Record<Tab, string> = {
   observacoes: "Observações",
   pedidos: "Pedidos",
   fotos: "Fotos",
+  links: "Links Bitrix",
 };
 
 function formatCurrency(value: number) {
@@ -26,11 +34,13 @@ export function ClientTabs({
   notes,
   orders,
   photos,
+  links,
 }: {
   clientId: string;
   notes: NoteWithAuthor[];
   orders: Order[];
   photos: PhotoWithUrl[];
+  links: ClientLink[];
 }) {
   const [tab, setTab] = useState<Tab>("observacoes");
 
@@ -58,6 +68,7 @@ export function ClientTabs({
         )}
         {tab === "pedidos" && <OrdersTab clientId={clientId} orders={orders} />}
         {tab === "fotos" && <PhotosTab clientId={clientId} photos={photos} />}
+        {tab === "links" && <LinksTab clientId={clientId} links={links} />}
       </div>
     </div>
   );
@@ -298,6 +309,94 @@ function PhotosTab({
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+function LinksTab({
+  clientId,
+  links,
+}: {
+  clientId: string;
+  links: ClientLink[];
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <form
+        ref={formRef}
+        action={(formData) =>
+          startTransition(async () => {
+            const result = await addLink(clientId, formData);
+            if (result?.error) setError(result.error);
+            else {
+              setError(null);
+              formRef.current?.reset();
+            }
+          })
+        }
+        className="flex flex-wrap items-end gap-3"
+      >
+        <div className="flex flex-1 flex-col gap-1">
+          <label className="text-xs text-zinc-500">URL do Bitrix</label>
+          <input
+            type="url"
+            name="url"
+            required
+            placeholder="https://seubone.bitrix24.com.br/..."
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+          />
+        </div>
+        <div className="flex flex-1 flex-col gap-1">
+          <label className="text-xs text-zinc-500">Descrição</label>
+          <input
+            type="text"
+            name="descricao"
+            placeholder="Ex: Negociação boné trucker maio/26"
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="rounded-md bg-chumbo px-4 py-2 text-sm font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+        >
+          {isPending ? "Salvando..." : "Adicionar link"}
+        </button>
+      </form>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <ul className="flex flex-col gap-2">
+        {links.map((link) => (
+          <li
+            key={link.id}
+            className="flex items-center justify-between gap-3 rounded-md border border-zinc-200 p-3"
+          >
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-w-0 flex-1 truncate text-sm text-blue-700 hover:underline"
+              title={link.url}
+            >
+              {link.descricao || link.url}
+            </a>
+            <button
+              onClick={() => startTransition(() => deleteLink(clientId, link.id))}
+              disabled={isPending}
+              className="shrink-0 text-xs text-red-600 hover:underline disabled:opacity-50"
+            >
+              Remover
+            </button>
+          </li>
+        ))}
+        {links.length === 0 && (
+          <p className="text-sm text-zinc-400">Nenhum link cadastrado ainda.</p>
+        )}
+      </ul>
     </div>
   );
 }

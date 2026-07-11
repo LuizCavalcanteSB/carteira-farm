@@ -79,3 +79,11 @@ export type OrderPhoto = {
   uploaded_by: string;
   created_at: string;
 };
+
+export type ClientLink = {
+  id: string;
+  client_id: string;
+  url: string;
+  descricao: string | null;
+  created_at: string;
+};

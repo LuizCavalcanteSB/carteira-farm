@@ -31,26 +31,37 @@ export default async function ClientPage({
 
   if (!client) notFound();
 
-  const [{ data: stats }, { data: notes }, { data: orders }, { data: photos }, { data: consultor }] =
-    await Promise.all([
-      supabase.from("client_stats").select("*").eq("client_id", id).single(),
-      supabase
-        .from("client_notes")
-        .select("*, author:profiles(nome)")
-        .eq("client_id", id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("orders")
-        .select("*")
-        .eq("client_id", id)
-        .order("data_pedido", { ascending: false }),
-      supabase
-        .from("order_photos")
-        .select("*")
-        .eq("client_id", id)
-        .order("created_at", { ascending: false }),
-      supabase.from("profiles").select("nome").eq("id", client.consultant_id).single(),
-    ]);
+  const [
+    { data: stats },
+    { data: notes },
+    { data: orders },
+    { data: photos },
+    { data: links },
+    { data: consultor },
+  ] = await Promise.all([
+    supabase.from("client_stats").select("*").eq("client_id", id).single(),
+    supabase
+      .from("client_notes")
+      .select("*, author:profiles(nome)")
+      .eq("client_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("orders")
+      .select("*")
+      .eq("client_id", id)
+      .order("data_pedido", { ascending: false }),
+    supabase
+      .from("order_photos")
+      .select("*")
+      .eq("client_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("client_links")
+      .select("*")
+      .eq("client_id", id)
+      .order("created_at", { ascending: false }),
+    supabase.from("profiles").select("nome").eq("id", client.consultant_id).single(),
+  ]);
 
   const photosWithUrls = await Promise.all(
     (photos ?? []).map(async (photo) => {
@@ -138,6 +149,7 @@ export default async function ClientPage({
           notes={notes ?? []}
           orders={orders ?? []}
           photos={photosWithUrls}
+          links={links ?? []}
         />
       </div>
     </div>

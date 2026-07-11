@@ -7,11 +7,13 @@ export function SearchBar({
   defaultQuery,
   defaultConsultor,
   defaultOrdenar,
+  defaultAlerta,
   consultores,
 }: {
   defaultQuery: string;
   defaultConsultor: string;
   defaultOrdenar: string;
+  defaultAlerta: string;
   consultores?: { id: string; nome: string }[];
 }) {
   const router = useRouter();
@@ -72,6 +74,18 @@ export function SearchBar({
         <option value="pedidos">Mais pedidos</option>
         <option value="valor">Maior valor comprado</option>
         <option value="ultimo_pedido">Último pedido mais recente</option>
+      </select>
+
+      <select
+        value={defaultAlerta}
+        onChange={(e) => updateParams({ alerta: e.target.value })}
+        className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+      >
+        <option value="">Todos os alertas</option>
+        <option value="30">Pedido há 30+ dias</option>
+        <option value="60">Pedido há 60+ dias</option>
+        <option value="90">Pedido há 90+ dias</option>
+        <option value="sem_pedido">Sem pedidos registrados</option>
       </select>
     </form>
   );

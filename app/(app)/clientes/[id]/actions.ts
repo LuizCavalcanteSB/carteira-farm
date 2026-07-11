@@ -57,3 +57,26 @@ export async function deletePhoto(clientId: string, photoId: string, storagePath
   await supabase.from("order_photos").delete().eq("id", photoId);
   revalidatePath(`/clientes/${clientId}`);
 }
+
+export async function addLink(clientId: string, formData: FormData) {
+  const url = String(formData.get("url") ?? "").trim();
+  if (!url) return { error: "Informe a URL do link." };
+
+  const descricao = String(formData.get("descricao") ?? "").trim() || null;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("client_links")
+    .insert({ client_id: clientId, url, descricao });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  return { error: null };
+}
+
+export async function deleteLink(clientId: string, linkId: string) {
+  const supabase = await createClient();
+  await supabase.from("client_links").delete().eq("id", linkId);
+  revalidatePath(`/clientes/${clientId}`);
+}
