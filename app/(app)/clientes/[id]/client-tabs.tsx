@@ -7,6 +7,7 @@ import {
   addNote,
   addOrder,
   deleteLink,
+  deleteOrder,
   deletePhoto,
   registerPhoto,
 } from "./actions";
@@ -138,7 +139,9 @@ function OrdersTab({
   orders: Order[];
 }) {
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const hoje = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="flex flex-col gap-4">
@@ -146,8 +149,12 @@ function OrdersTab({
         ref={formRef}
         action={(formData) =>
           startTransition(async () => {
-            await addOrder(clientId, formData);
-            formRef.current?.reset();
+            const result = await addOrder(clientId, formData);
+            if (result?.error) setError(result.error);
+            else {
+              setError(null);
+              formRef.current?.reset();
+            }
           })
         }
         className="flex flex-wrap items-end gap-3"
@@ -157,6 +164,7 @@ function OrdersTab({
           <input
             type="date"
             name="data_pedido"
+            min={hoje}
             required
             className="rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
           />
@@ -189,6 +197,7 @@ function OrdersTab({
           {isPending ? "Salvando..." : "Adicionar pedido"}
         </button>
       </form>
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <table className="w-full text-sm">
         <thead className="text-left text-xs uppercase text-zinc-500">
@@ -196,6 +205,7 @@ function OrdersTab({
             <th className="py-2">Data</th>
             <th className="py-2">Valor</th>
             <th className="py-2">Descrição</th>
+            <th className="py-2"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100">
@@ -206,11 +216,22 @@ function OrdersTab({
               </td>
               <td className="py-2">{formatCurrency(order.valor)}</td>
               <td className="py-2 text-zinc-600">{order.descricao || "—"}</td>
+              <td className="py-2 text-right">
+                <button
+                  onClick={() =>
+                    startTransition(() => deleteOrder(clientId, order.id))
+                  }
+                  disabled={isPending}
+                  className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                >
+                  Remover
+                </button>
+              </td>
             </tr>
           ))}
           {orders.length === 0 && (
             <tr>
-              <td colSpan={3} className="py-6 text-center text-zinc-400">
+              <td colSpan={4} className="py-6 text-center text-zinc-400">
                 Nenhum pedido registrado.
               </td>
             </tr>

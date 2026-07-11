@@ -25,15 +25,35 @@ export async function addOrder(clientId: string, formData: FormData) {
   const data_pedido = String(formData.get("data_pedido") ?? "");
   const descricao = String(formData.get("descricao") ?? "").trim() || null;
 
+  // O histórico de compras anterior ao sistema já está somado nos campos
+  // historico_* do cliente (ver client_stats). Pedidos lançados aqui com data
+  // passada duplicariam esse total, então só aceitamos data de hoje em diante.
+  const hoje = new Date().toISOString().slice(0, 10);
+  if (data_pedido && data_pedido < hoje) {
+    return {
+      error:
+        "Não é possível lançar pedido com data passada — esse período já está somado no histórico do cliente. Lance apenas pedidos a partir de hoje.",
+    };
+  }
+
   const supabase = await createClient();
 
-  await supabase.from("orders").insert({
+  const { error } = await supabase.from("orders").insert({
     client_id: clientId,
     valor,
     data_pedido: data_pedido || undefined,
     descricao,
   });
 
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  return { error: null };
+}
+
+export async function deleteOrder(clientId: string, orderId: string) {
+  const supabase = await createClient();
+  await supabase.from("orders").delete().eq("id", orderId);
   revalidatePath(`/clientes/${clientId}`);
 }
 
