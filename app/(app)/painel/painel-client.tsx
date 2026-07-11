@@ -232,6 +232,48 @@ export function PainelDiarioClient({
           </tbody>
         </table>
       </div>
+
+      <ProgressoDoDia metaGlobal={metaGlobal} vtvTotal={vtvTotal} />
+    </div>
+  );
+}
+
+function ProgressoDoDia({
+  metaGlobal,
+  vtvTotal,
+}: {
+  metaGlobal: number;
+  vtvTotal: number;
+}) {
+  if (metaGlobal <= 0) {
+    return (
+      <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
+        <p className="text-sm text-zinc-400">
+          Defina a meta diária do time acima para acompanhar o progresso aqui.
+        </p>
+      </div>
+    );
+  }
+
+  const percentual = (vtvTotal / metaGlobal) * 100;
+  const percentualExibido = Math.round(percentual);
+  const bateuMeta = percentual >= 100;
+
+  return (
+    <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
+      <div className="flex items-baseline justify-between">
+        <p className="text-sm font-semibold text-chumbo">Progresso do dia</p>
+        <p className={`text-sm font-medium ${bateuMeta ? "text-green-700" : "text-chumbo-light"}`}>
+          {formatCurrency(vtvTotal)} de {formatCurrency(metaGlobal)} ({percentualExibido}%)
+          {bateuMeta && " 🎉"}
+        </p>
+      </div>
+      <div className="mt-2 h-4 w-full overflow-hidden rounded-full bg-zinc-100">
+        <div
+          className={`h-full rounded-full transition-all ${bateuMeta ? "bg-green-600" : "bg-brand"}`}
+          style={{ width: `${Math.min(percentual, 100)}%` }}
+        />
+      </div>
     </div>
   );
 }
