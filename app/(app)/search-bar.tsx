@@ -6,10 +6,12 @@ import { useState } from "react";
 export function SearchBar({
   defaultQuery,
   defaultConsultor,
+  defaultOrdenar,
   consultores,
 }: {
   defaultQuery: string;
   defaultConsultor: string;
+  defaultOrdenar: string;
   consultores?: { id: string; nome: string }[];
 }) {
   const router = useRouter();
@@ -60,6 +62,17 @@ export function SearchBar({
           ))}
         </select>
       )}
+
+      <select
+        value={defaultOrdenar}
+        onChange={(e) => updateParams({ ordenar: e.target.value })}
+        className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+      >
+        <option value="nome">Ordenar por nome</option>
+        <option value="pedidos">Mais pedidos</option>
+        <option value="valor">Maior valor comprado</option>
+        <option value="ultimo_pedido">Último pedido mais recente</option>
+      </select>
     </form>
   );
 }
