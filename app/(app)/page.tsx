@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatCnpj, onlyDigits } from "@/lib/cnpj";
+import { formatDateOnly } from "@/lib/date";
 import { SearchBar } from "./search-bar";
 import type { ClientStatus } from "@/lib/types";
 
@@ -220,9 +221,7 @@ export default async function DashboardPage({
                     {formatCurrency(totalComprado)}
                   </td>
                   <td className="px-4 py-3 text-zinc-600">
-                    {ultimoPedido
-                      ? new Date(ultimoPedido).toLocaleDateString("pt-BR")
-                      : "—"}
+                    {ultimoPedido ? formatDateOnly(ultimoPedido) : "—"}
                   </td>
                 </tr>
               );

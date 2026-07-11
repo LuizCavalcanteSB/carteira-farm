@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatCnpj } from "@/lib/cnpj";
+import { formatDateOnly } from "@/lib/date";
 import { ClientTabs } from "./client-tabs";
 import { BirthdayEditor } from "./birthday-editor";
 import type { ClientStatus, PerfilComprador, Porte } from "@/lib/types";
@@ -106,7 +107,7 @@ export default async function ClientPage({
           label="Último pedido"
           value={
             stats?.ultimo_pedido
-              ? new Date(stats.ultimo_pedido).toLocaleDateString("pt-BR")
+              ? formatDateOnly(stats.ultimo_pedido)
               : "—"
           }
         />
@@ -125,7 +126,7 @@ export default async function ClientPage({
           label="Primeira compra"
           value={
             client.historico_primeira_compra
-              ? new Date(client.historico_primeira_compra).toLocaleDateString("pt-BR")
+              ? formatDateOnly(client.historico_primeira_compra)
               : null
           }
         />

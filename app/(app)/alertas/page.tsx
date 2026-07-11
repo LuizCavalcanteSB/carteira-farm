@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatCnpj } from "@/lib/cnpj";
+import { formatDateOnly } from "@/lib/date";
 import {
   ANIVERSARIO_TIER_COLOR,
   bucketUltimoPedido,
@@ -157,9 +158,7 @@ export default async function AlertasPage({
                     </td>
                   )}
                   <td className="px-4 py-3 text-zinc-600">
-                    {ultimoPedido
-                      ? new Date(ultimoPedido).toLocaleDateString("pt-BR")
-                      : "—"}
+                    {ultimoPedido ? formatDateOnly(ultimoPedido) : "—"}
                   </td>
                 </tr>
               ))}

@@ -12,6 +12,8 @@ import {
   registerPhoto,
 } from "./actions";
 import type { ClientLink, ClientNote, Order, OrderPhoto } from "@/lib/types";
+import { formatDateOnly } from "@/lib/date";
+import { contaNasEstatisticas } from "@/lib/orders";
 
 type NoteWithAuthor = ClientNote & { author: { nome: string } | null };
 type PhotoWithUrl = OrderPhoto & { url: string | null };
@@ -141,7 +143,6 @@ function OrdersTab({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const hoje = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="flex flex-col gap-4">
@@ -164,7 +165,6 @@ function OrdersTab({
           <input
             type="date"
             name="data_pedido"
-            min={hoje}
             required
             className="rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
           />
@@ -209,26 +209,37 @@ function OrdersTab({
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-100">
-          {orders.map((order) => (
-            <tr key={order.id}>
-              <td className="py-2">
-                {new Date(order.data_pedido).toLocaleDateString("pt-BR")}
-              </td>
-              <td className="py-2">{formatCurrency(order.valor)}</td>
-              <td className="py-2 text-zinc-600">{order.descricao || "—"}</td>
-              <td className="py-2 text-right">
-                <button
-                  onClick={() =>
-                    startTransition(() => deleteOrder(clientId, order.id))
-                  }
-                  disabled={isPending}
-                  className="text-xs text-red-600 hover:underline disabled:opacity-50"
-                >
-                  Remover
-                </button>
-              </td>
-            </tr>
-          ))}
+          {orders.map((order) => {
+            const contabilizado = contaNasEstatisticas(order.data_pedido);
+            return (
+              <tr key={order.id}>
+                <td className="py-2">
+                  {formatDateOnly(order.data_pedido)}
+                  {!contabilizado && (
+                    <span
+                      title="Pedido anterior ao início do controle de pedidos no sistema — já está somado no histórico do cliente e não entra nas estatísticas (Pedidos, Total comprado, Ticket médio) para evitar duplicar."
+                      className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500"
+                    >
+                      não contabilizado
+                    </span>
+                  )}
+                </td>
+                <td className="py-2">{formatCurrency(order.valor)}</td>
+                <td className="py-2 text-zinc-600">{order.descricao || "—"}</td>
+                <td className="py-2 text-right">
+                  <button
+                    onClick={() =>
+                      startTransition(() => deleteOrder(clientId, order.id))
+                    }
+                    disabled={isPending}
+                    className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                  >
+                    Remover
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
           {orders.length === 0 && (
             <tr>
               <td colSpan={4} className="py-6 text-center text-zinc-400">

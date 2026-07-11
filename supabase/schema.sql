@@ -135,19 +135,38 @@ create table public.metas_mensais (
 -- comprado, ticket médio, data do último pedido). security_invoker faz a view
 -- rodar com as permissões de quem consulta, então a RLS de `orders` continua
 -- valendo (um consultor não enxerga o agregado de clientes de outro).
+--
+-- Pedidos com data anterior a ORDERS_LIVE_CUTOFF (ver lib/orders.ts) já estão
+-- somados nos campos historico_* do cliente (importados de planilha) — por
+-- isso são ignorados aqui, senão duplicariam o total. Continuam podendo ser
+-- cadastrados normalmente (para registro/consulta), só não contam na soma.
 create view public.client_stats
 with (security_invoker = on) as
 select
   c.id as client_id,
-  c.historico_qtd_compras + count(o.id) as pedidos,
-  c.historico_faturamento_total + coalesce(sum(o.valor), 0) as total_comprado,
+  c.historico_qtd_compras
+    + count(o.id) filter (where o.data_pedido >= date '2026-07-11') as pedidos,
+  c.historico_faturamento_total
+    + coalesce(sum(o.valor) filter (where o.data_pedido >= date '2026-07-11'), 0)
+    as total_comprado,
   case
-    when (c.historico_qtd_compras + count(o.id)) > 0
-    then (c.historico_faturamento_total + coalesce(sum(o.valor), 0))
-      / (c.historico_qtd_compras + count(o.id))
+    when (
+      c.historico_qtd_compras
+      + count(o.id) filter (where o.data_pedido >= date '2026-07-11')
+    ) > 0
+    then (
+      c.historico_faturamento_total
+      + coalesce(sum(o.valor) filter (where o.data_pedido >= date '2026-07-11'), 0)
+    ) / (
+      c.historico_qtd_compras
+      + count(o.id) filter (where o.data_pedido >= date '2026-07-11')
+    )
     else 0
   end as ticket_medio,
-  greatest(c.historico_ultima_compra, max(o.data_pedido)) as ultimo_pedido
+  greatest(
+    c.historico_ultima_compra,
+    max(o.data_pedido) filter (where o.data_pedido >= date '2026-07-11')
+  ) as ultimo_pedido
 from public.clients c
 left join public.orders o on o.client_id = c.id
 group by c.id;
