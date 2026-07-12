@@ -4,8 +4,8 @@ import { formatCnpj } from "@/lib/cnpj";
 import { formatDateOnly } from "@/lib/date";
 import { ClientTabs } from "./client-tabs";
 import { BirthdayEditor } from "./birthday-editor";
+import { ClientInfoEditor } from "./client-info-editor";
 import type { ClientStatus, PerfilComprador, Porte } from "@/lib/types";
-import { PERFIL_COMPRADOR_LABEL, PORTE_LABEL } from "@/lib/labels";
 
 const STATUS_LABEL: Record<ClientStatus, string> = {
   ativo: "Ativo",
@@ -113,40 +113,38 @@ export default async function ClientPage({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 rounded-lg border border-chumbo/10 bg-white p-4 text-sm shadow-sm sm:grid-cols-2 lg:grid-cols-4">
-        <Field label="Contato" value={client.contato} />
-        <Field label="Comprador" value={client.comprador} />
-        <Field label="Telefone" value={client.telefone} />
-        <Field label="E-mail" value={client.email} />
-        <Field label="Segmento" value={client.segmento} />
-        <Field label="Cidade" value={client.cidade} />
-        <Field label="Endereço" value={client.endereco} />
-        <Field label="Situação cadastral" value={client.situacao_cadastral} />
-        <Field
-          label="Primeira compra"
-          value={
-            client.historico_primeira_compra
-              ? formatDateOnly(client.historico_primeira_compra)
-              : null
-          }
-        />
-        <Field
-          label="Perfil do comprador"
-          value={
-            client.perfil_comprador
-              ? PERFIL_COMPRADOR_LABEL[client.perfil_comprador as PerfilComprador]
-              : null
-          }
-        />
-        <Field
-          label="Porte"
-          value={client.porte ? PORTE_LABEL[client.porte as Porte] : null}
-        />
-        <Field label="Consultor responsável" value={consultor?.nome} />
-        <BirthdayEditor
+      <div className="rounded-lg border border-chumbo/10 bg-white p-4 text-sm shadow-sm">
+        <ClientInfoEditor
           clientId={client.id}
-          aniversarioEmpresa={client.aniversario_empresa}
+          info={{
+            contato: client.contato,
+            comprador: client.comprador,
+            telefone: client.telefone,
+            email: client.email,
+            segmento: client.segmento,
+            cidade: client.cidade,
+            endereco: client.endereco,
+            situacao_cadastral: client.situacao_cadastral,
+            perfil_comprador: client.perfil_comprador as PerfilComprador | null,
+            porte: client.porte as Porte | null,
+          }}
         />
+
+        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-zinc-100 pt-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Field
+            label="Primeira compra"
+            value={
+              client.historico_primeira_compra
+                ? formatDateOnly(client.historico_primeira_compra)
+                : null
+            }
+          />
+          <Field label="Consultor responsável" value={consultor?.nome} />
+          <BirthdayEditor
+            clientId={client.id}
+            aniversarioEmpresa={client.aniversario_empresa}
+          />
+        </div>
       </div>
 
       <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">

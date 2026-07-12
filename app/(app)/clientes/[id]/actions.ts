@@ -90,6 +90,33 @@ export async function deleteLink(clientId: string, linkId: string) {
   revalidatePath(`/clientes/${clientId}`);
 }
 
+export async function atualizarInfoCliente(
+  clientId: string,
+  campos: {
+    contato: string | null;
+    comprador: string | null;
+    telefone: string | null;
+    email: string | null;
+    segmento: string | null;
+    cidade: string | null;
+    endereco: string | null;
+    situacao_cadastral: string | null;
+    perfil_comprador: string | null;
+    porte: string | null;
+  },
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clients")
+    .update(campos)
+    .eq("id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  return { error: null };
+}
+
 export async function setAniversario(clientId: string, data: string) {
   const supabase = await createClient();
   const { error } = await supabase
