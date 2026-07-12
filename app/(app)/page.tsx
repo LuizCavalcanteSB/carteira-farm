@@ -75,18 +75,25 @@ export default async function DashboardPage({
 
   const { data: clients } = await query;
 
-  const clientIds = (clients ?? []).map((c) => c.id);
+  // Sem filtro por client_id aqui de propósito: a RLS de client_stats/
+  // client_notes/order_photos já escopa pra só o que este usuário pode ver
+  // (própria carteira, ou tudo se admin). Filtrar com .in() numa lista de
+  // dezenas/centenas de UUIDs gera uma query string enorme que pode falhar —
+  // e como esse erro não era checado, uma falha aqui zerava a tela inteira
+  // silenciosamente em vez de avisar.
+  const [
+    { data: stats, error: statsError },
+    { data: notes, error: notesError },
+    { data: photos, error: photosError },
+  ] = await Promise.all([
+    supabase
+      .from("client_stats")
+      .select("client_id, pedidos, total_comprado, ultimo_pedido"),
+    supabase.from("client_notes").select("client_id"),
+    supabase.from("order_photos").select("client_id"),
+  ]);
 
-  const [{ data: stats }, { data: notes }, { data: photos }] = clientIds.length
-    ? await Promise.all([
-        supabase
-          .from("client_stats")
-          .select("client_id, pedidos, total_comprado, ultimo_pedido")
-          .in("client_id", clientIds),
-        supabase.from("client_notes").select("client_id").in("client_id", clientIds),
-        supabase.from("order_photos").select("client_id").in("client_id", clientIds),
-      ])
-    : [{ data: [] }, { data: [] }, { data: [] }];
+  const statsErro = statsError || notesError || photosError ? true : false;
 
   const statsByClient = new Map((stats ?? []).map((s) => [s.client_id, s]));
 
@@ -158,6 +165,14 @@ export default async function DashboardPage({
         defaultConsultor={consultor ?? ""}
         defaultOrdenar={ordenar}
       />
+
+      {statsErro && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Não foi possível carregar pedidos/total comprado/observações agora
+          — os números abaixo podem estar incompletos. Atualize a página em
+          instantes.
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <ResumoCard label="Clientes" value={String(totais.clientes)} />
