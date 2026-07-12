@@ -1,4 +1,4 @@
-import { lookupCnpj } from "@/lib/cnpj";
+import { lookupCnpj, onlyDigits } from "@/lib/cnpj";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -15,6 +15,7 @@ export async function GET(
   }
 
   const { cnpj } = await params;
+  const digits = onlyDigits(cnpj);
 
   const result = await lookupCnpj(cnpj);
   if (!result) {
@@ -24,5 +25,21 @@ export async function GET(
     );
   }
 
-  return NextResponse.json(result);
+  // RLS de `clients` já garante que só aparece aqui se for cliente do próprio
+  // consultor (ou de qualquer um, se admin) — não vaza carteira de outro.
+  const [{ data: pesquisa }, { data: clienteExistente }] = await Promise.all([
+    supabase
+      .from("cnpj_pesquisas")
+      .select("estimativa_funcionarios, eventos")
+      .eq("cnpj", digits)
+      .maybeSingle(),
+    supabase.from("clients").select("id, nome").eq("cnpj", digits).maybeSingle(),
+  ]);
+
+  return NextResponse.json({
+    ...result,
+    estimativaFuncionarios: pesquisa?.estimativa_funcionarios ?? null,
+    eventos: pesquisa?.eventos ?? null,
+    clienteExistente: clienteExistente ?? null,
+  });
 }

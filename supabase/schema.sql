@@ -151,7 +151,19 @@ create table public.painel_diario_consultor (
   unique (consultant_id, data)
 );
 
--- 9. View com estatísticas agregadas por cliente (nº de pedidos, total
+-- 9. Anotações manuais de pesquisa de CNPJ (busca livre, não ligada a um
+-- cliente cadastrado) — dados que não existem em nenhuma base pública/
+-- gratuita (estimativa de funcionários, eventos que a empresa participa),
+-- preenchidos pelo time e compartilhados entre todos, como o painel diário.
+create table public.cnpj_pesquisas (
+  cnpj text primary key check (cnpj ~ '^\d{14}$'),
+  estimativa_funcionarios text,
+  eventos text,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references public.profiles (id)
+);
+
+-- 10. View com estatísticas agregadas por cliente (nº de pedidos, total
 -- comprado, ticket médio, data do último pedido). security_invoker faz a view
 -- rodar com as permissões de quem consulta, então a RLS de `orders` continua
 -- valendo (um consultor não enxerga o agregado de clientes de outro).
@@ -204,6 +216,7 @@ alter table public.client_links enable row level security;
 alter table public.metas_mensais enable row level security;
 alter table public.painel_diario_meta enable row level security;
 alter table public.painel_diario_consultor enable row level security;
+alter table public.cnpj_pesquisas enable row level security;
 
 -- helper: papel do usuário logado
 create function public.current_role()
@@ -301,6 +314,14 @@ create policy "painel_meta_all_authenticated"
 
 create policy "painel_consultor_all_authenticated"
   on public.painel_diario_consultor for all
+  to authenticated
+  using (true)
+  with check (true);
+
+-- cnpj_pesquisas: mesma lógica do painel diário — anotação compartilhada,
+-- qualquer autenticado vê e edita.
+create policy "cnpj_pesquisas_all_authenticated"
+  on public.cnpj_pesquisas for all
   to authenticated
   using (true)
   with check (true);

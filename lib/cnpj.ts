@@ -15,6 +15,12 @@ export function isValidCnpjLength(value: string) {
   return onlyDigits(value).length === 14;
 }
 
+export type Socio = {
+  nome: string;
+  qualificacao: string | null;
+  dataEntrada: string | null;
+};
+
 export type CnpjLookupResult = {
   cnpj: string;
   nome: string;
@@ -24,6 +30,16 @@ export type CnpjLookupResult = {
   endereco: string | null;
   situacao_cadastral: string | null;
   segmento: string | null;
+  // porte oficial da Receita Federal (classificação por faturamento do
+  // Simples Nacional — não tem relação com número de funcionários).
+  porte: string | null;
+  socios: Socio[];
+};
+
+type BrasilApiSocio = {
+  nome_socio?: string;
+  qualificacao_socio?: string;
+  data_entrada_sociedade?: string;
 };
 
 type BrasilApiCnpjResponse = {
@@ -40,6 +56,9 @@ type BrasilApiCnpjResponse = {
   municipio?: string;
   uf?: string;
   cep?: string;
+  descricao_porte?: string;
+  porte?: string;
+  qsa?: BrasilApiSocio[];
 };
 
 /**
@@ -82,5 +101,13 @@ export async function lookupCnpj(
     endereco: endereco || null,
     situacao_cadastral: data.descricao_situacao_cadastral || null,
     segmento: data.cnae_fiscal_descricao || null,
+    porte: data.descricao_porte || data.porte || null,
+    socios: (data.qsa ?? [])
+      .filter((s) => s.nome_socio)
+      .map((s) => ({
+        nome: s.nome_socio!,
+        qualificacao: s.qualificacao_socio || null,
+        dataEntrada: s.data_entrada_sociedade || null,
+      })),
   };
 }

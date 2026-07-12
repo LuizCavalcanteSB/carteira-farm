@@ -10,6 +10,7 @@ import {
   Users,
   Bell,
   Target,
+  Search,
   LogOut,
   Menu,
   X,
@@ -22,6 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/painel", label: "Painel do dia", icon: Target },
   { href: "/clientes/novo", label: "Novo cliente", icon: UserPlus },
+  { href: "/busca-cnpj", label: "Busca CNPJ", icon: Search },
   { href: "/importar", label: "Importar planilha", icon: Upload },
   { href: "/alertas", label: "Alertas", icon: Bell },
 ];
