@@ -162,7 +162,7 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase
       .from("clients")
       .select(
-        "id, cidade, comprador, historico_qtd_compras, historico_faturamento_total, historico_primeira_compra, historico_ultima_compra, aniversario_empresa",
+        "id, cidade, comprador, perfil_comprador, porte, historico_qtd_compras, historico_faturamento_total, historico_primeira_compra, historico_ultima_compra, aniversario_empresa",
       )
       .eq("cnpj", cnpj)
       .maybeSingle();
@@ -186,6 +186,12 @@ export async function POST(request: Request) {
     const aniversarioEmpresa = isValidISODate(row.aniversario_empresa)
       ? row.aniversario_empresa
       : (existing?.aniversario_empresa ?? null);
+    const perfilComprador = row.perfil_comprador
+      ? (PERFIL_MAP[normalizeKey(row.perfil_comprador)] ?? existing?.perfil_comprador ?? null)
+      : (existing?.perfil_comprador ?? null);
+    const porte = row.porte
+      ? (PORTE_MAP[normalizeKey(row.porte)] ?? existing?.porte ?? null)
+      : (existing?.porte ?? null);
 
     const { error } = await supabase.from("clients").upsert(
       {
@@ -201,10 +207,8 @@ export async function POST(request: Request) {
         cidade,
         situacao_cadastral,
         status: STATUS_MAP[row.status?.trim().toLowerCase() ?? ""] ?? "ativo",
-        perfil_comprador: row.perfil_comprador
-          ? PERFIL_MAP[normalizeKey(row.perfil_comprador)] ?? null
-          : null,
-        porte: row.porte ? PORTE_MAP[normalizeKey(row.porte)] ?? null : null,
+        perfil_comprador: perfilComprador,
+        porte,
         historico_qtd_compras: qtdCompras,
         historico_faturamento_total: faturamentoTotal,
         historico_primeira_compra: primeiraCompra,
