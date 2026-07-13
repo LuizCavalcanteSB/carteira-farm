@@ -23,7 +23,13 @@ function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-const ORDENAR_OPCOES = ["nome", "pedidos", "valor", "ultimo_pedido"] as const;
+const ORDENAR_OPCOES = [
+  "nome",
+  "pedidos",
+  "valor",
+  "ultimo_pedido",
+  "recentes",
+] as const;
 type Ordenar = (typeof ORDENAR_OPCOES)[number];
 
 export default async function DashboardPage({
@@ -60,7 +66,9 @@ export default async function DashboardPage({
 
   let query = supabase
     .from("clients")
-    .select("id, nome, cnpj, status, segmento, consultant_id, contato_status")
+    .select(
+      "id, nome, cnpj, status, segmento, consultant_id, contato_status, created_at",
+    )
     .order("nome");
 
   if (q) {
@@ -158,6 +166,12 @@ export default async function DashboardPage({
         new Date(b.ultimoPedido).getTime() - new Date(a.ultimoPedido).getTime()
       );
     }
+    if (ordenar === "recentes") {
+      return (
+        new Date(b.client.created_at).getTime() -
+        new Date(a.client.created_at).getTime()
+      );
+    }
     return a.client.nome.localeCompare(b.client.nome);
   });
 
@@ -205,6 +219,9 @@ export default async function DashboardPage({
               <th className="px-4 py-3">Pedidos</th>
               <th className="px-4 py-3">Total comprado</th>
               <th className="px-4 py-3">Último pedido</th>
+              {ordenar === "recentes" && (
+                <th className="px-4 py-3">Adicionado em</th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -255,13 +272,20 @@ export default async function DashboardPage({
                   <td className="px-4 py-3 text-zinc-600">
                     {ultimoPedido ? formatDateOnly(ultimoPedido) : "—"}
                   </td>
+                  {ordenar === "recentes" && (
+                    <td className="px-4 py-3 text-zinc-600">
+                      {new Date(client.created_at).toLocaleDateString("pt-BR")}
+                    </td>
+                  )}
                 </tr>
               );
             })}
             {linhas.length === 0 && (
               <tr>
                 <td
-                  colSpan={isAdmin ? 7 : 6}
+                  colSpan={
+                    (isAdmin ? 7 : 6) + (ordenar === "recentes" ? 1 : 0)
+                  }
                   className="px-4 py-8 text-center text-zinc-400"
                 >
                   Nenhum cliente encontrado.

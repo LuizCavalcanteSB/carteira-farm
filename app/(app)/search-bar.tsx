@@ -72,6 +72,7 @@ export function SearchBar({
         <option value="pedidos">Mais pedidos</option>
         <option value="valor">Maior valor comprado</option>
         <option value="ultimo_pedido">Último pedido mais recente</option>
+        <option value="recentes">Adicionados recentemente</option>
       </select>
     </form>
   );

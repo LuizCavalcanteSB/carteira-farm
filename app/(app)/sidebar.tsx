@@ -58,14 +58,9 @@ function SidebarContent({
         className="flex shrink-0 items-center px-4 pt-5 pb-3"
         onClick={onNavigate}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo-branco.svg"
-          alt="SeuBoné"
-          width={100}
-          height={24}
-          style={{ width: 100, height: 24 }}
-        />
+        <span className="text-lg font-semibold tracking-tight text-white">
+          CACA <span className="text-brand">1.0</span>
+        </span>
       </Link>
 
       <Link
@@ -140,14 +135,9 @@ export function Sidebar({
     <>
       {/* Mobile top bar */}
       <div className="flex items-center justify-between bg-chumbo px-4 py-3 md:hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo-branco.svg"
-          alt="SeuBoné"
-          width={90}
-          height={22}
-          style={{ width: 90, height: 22 }}
-        />
+        <span className="text-base font-semibold tracking-tight text-white">
+          CACA <span className="text-brand">1.0</span>
+        </span>
         <button
           onClick={() => setIsOpen(true)}
           aria-label="Abrir menu"
