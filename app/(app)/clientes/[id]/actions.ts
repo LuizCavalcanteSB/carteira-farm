@@ -20,6 +20,26 @@ export async function addNote(clientId: string, formData: FormData) {
   revalidatePath(`/clientes/${clientId}`);
 }
 
+export async function editarNota(
+  clientId: string,
+  noteId: string,
+  conteudo: string,
+) {
+  const texto = conteudo.trim();
+  if (!texto) return { error: "A observação não pode ficar em branco." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("client_notes")
+    .update({ conteudo: texto })
+    .eq("id", noteId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  return { error: null };
+}
+
 export async function addOrder(clientId: string, formData: FormData) {
   const valor = Number(formData.get("valor") ?? 0);
   const data_pedido = String(formData.get("data_pedido") ?? "");
