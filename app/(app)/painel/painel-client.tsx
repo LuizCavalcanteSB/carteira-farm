@@ -45,61 +45,87 @@ export function PainelDiarioClient({
   // Sincronização ao vivo: qualquer edição de qualquer pessoa (em qualquer
   // sessão/navegador) chega aqui via Supabase Realtime e atualiza a tela na
   // hora, sem precisar de refresh — é um quadro compartilhado pelo time todo.
+  //
+  // O socket do Realtime autentica como role `anon` por padrão — não basta
+  // estar logado no app. Nossas policies de RLS liberam só `authenticated`,
+  // então sem propagar o token da sessão pro cliente de realtime, o Postgres
+  // barra silenciosamente as mudanças (a conexão fica "SUBSCRIBED", só que
+  // nenhum evento chega).
   useEffect(() => {
     const supabase = createClient();
-    const channel = supabase
-      .channel(`painel-diario-${data}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "painel_diario_meta",
-          filter: `data=eq.${data}`,
-        },
-        (payload) => {
-          const novaMeta = (payload.new as { meta_diaria?: number })
-            ?.meta_diaria;
-          if (typeof novaMeta === "number") setMetaGlobal(novaMeta);
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "painel_diario_consultor",
-          filter: `data=eq.${data}`,
-        },
-        (payload) => {
-          const linha = payload.new as {
-            consultant_id?: string;
-            meta_individual?: number;
-            vtv?: number;
-            quantidade_vendas?: number;
-            ligacoes?: number;
-          };
-          if (!linha?.consultant_id) return;
-          setLinhas((prev) =>
-            prev.map((l) =>
-              l.consultant_id === linha.consultant_id
-                ? {
-                    ...l,
-                    meta_individual: linha.meta_individual ?? l.meta_individual,
-                    vtv: linha.vtv ?? l.vtv,
-                    quantidade_vendas:
-                      linha.quantidade_vendas ?? l.quantidade_vendas,
-                    ligacoes: linha.ligacoes ?? l.ligacoes,
-                  }
-                : l,
-            ),
-          );
-        },
-      )
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelado = false;
+
+    function criarCanal() {
+      return supabase
+        .channel(`painel-diario-${data}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "painel_diario_meta",
+            filter: `data=eq.${data}`,
+          },
+          (payload) => {
+            const novaMeta = (payload.new as { meta_diaria?: number })
+              ?.meta_diaria;
+            if (typeof novaMeta === "number") setMetaGlobal(novaMeta);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "painel_diario_consultor",
+            filter: `data=eq.${data}`,
+          },
+          (payload) => {
+            const linha = payload.new as {
+              consultant_id?: string;
+              meta_individual?: number;
+              vtv?: number;
+              quantidade_vendas?: number;
+              ligacoes?: number;
+            };
+            if (!linha?.consultant_id) return;
+            setLinhas((prev) =>
+              prev.map((l) =>
+                l.consultant_id === linha.consultant_id
+                  ? {
+                      ...l,
+                      meta_individual:
+                        linha.meta_individual ?? l.meta_individual,
+                      vtv: linha.vtv ?? l.vtv,
+                      quantidade_vendas:
+                        linha.quantidade_vendas ?? l.quantidade_vendas,
+                      ligacoes: linha.ligacoes ?? l.ligacoes,
+                    }
+                  : l,
+              ),
+            );
+          },
+        )
+        .subscribe();
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelado) return;
+      if (session?.access_token) supabase.realtime.setAuth(session.access_token);
+      channel = criarCanal();
+    });
+
+    const {
+      data: { subscription: authSubscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) supabase.realtime.setAuth(session.access_token);
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelado = true;
+      authSubscription.unsubscribe();
+      if (channel) supabase.removeChannel(channel);
     };
   }, [data]);
 
