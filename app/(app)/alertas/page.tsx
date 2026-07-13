@@ -55,17 +55,19 @@ export default async function AlertasPage({
   }
 
   const { data: clients } = await clientQuery;
-  const clientIds = (clients ?? []).map((c) => c.id);
+  const clientIds = new Set((clients ?? []).map((c) => c.id));
 
-  const { data: stats } = clientIds.length
-    ? await supabase
-        .from("client_stats")
-        .select("client_id, ultimo_pedido")
-        .in("client_id", clientIds)
-    : { data: [] };
+  // Sem .in() por lista de client_id — a mesma consulta filtrada por URL já
+  // zerou o dashboard uma vez com listas grandes (ver app/(app)/page.tsx). A
+  // RLS de client_stats já escopa pra só o que este usuário pode ver.
+  const { data: allStats } = await supabase
+    .from("client_stats")
+    .select("client_id, ultimo_pedido");
 
   const ultimoPedidoByClient = new Map(
-    (stats ?? []).map((s) => [s.client_id, s.ultimo_pedido]),
+    (allStats ?? [])
+      .filter((s) => clientIds.has(s.client_id))
+      .map((s) => [s.client_id, s.ultimo_pedido]),
   );
 
   const linhasPedidos = (clients ?? [])

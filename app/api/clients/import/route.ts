@@ -116,13 +116,25 @@ export async function POST(request: Request) {
       continue;
     }
 
-    let nome = row.nome?.trim();
-    let telefone = row.telefone?.trim() || null;
-    let email = row.email?.trim() || null;
-    let segmento = row.segmento?.trim() || null;
-    let razao_social: string | null = null;
-    let endereco: string | null = null;
-    let situacao_cadastral: string | null = null;
+    // Busca o cliente já cadastrado ANTES de decidir qualquer valor — todo
+    // campo opcional abaixo segue a mesma regra: planilha > Receita Federal
+    // > o que já estava salvo (nunca zera algo preenchido manualmente, seja
+    // via importação anterior ou pelo botão Editar na ficha do cliente).
+    const { data: existing } = await supabase
+      .from("clients")
+      .select(
+        "id, nome, telefone, email, segmento, razao_social, endereco, situacao_cadastral, contato, cidade, comprador, perfil_comprador, porte, historico_qtd_compras, historico_faturamento_total, historico_primeira_compra, historico_ultima_compra, aniversario_empresa",
+      )
+      .eq("cnpj", cnpj)
+      .maybeSingle();
+
+    let nome = row.nome?.trim() || undefined;
+    let telefone = row.telefone?.trim() || existing?.telefone || null;
+    let email = row.email?.trim() || existing?.email || null;
+    let segmento = row.segmento?.trim() || existing?.segmento || null;
+    let razao_social: string | null = existing?.razao_social ?? null;
+    let endereco: string | null = existing?.endereco ?? null;
+    let situacao_cadastral: string | null = existing?.situacao_cadastral ?? null;
 
     if (!nome || !telefone || !segmento) {
       const found = await lookupCnpj(cnpj);
@@ -131,9 +143,9 @@ export async function POST(request: Request) {
         telefone = telefone || found.telefone;
         email = email || found.email;
         segmento = segmento || found.segmento;
-        razao_social = found.razao_social;
-        endereco = found.endereco;
-        situacao_cadastral = found.situacao_cadastral;
+        razao_social = found.razao_social || razao_social;
+        endereco = found.endereco || endereco;
+        situacao_cadastral = found.situacao_cadastral || situacao_cadastral;
       }
       // evita estourar o rate limit da BrasilAPI em importações grandes
       await sleep(250);
@@ -149,6 +161,21 @@ export async function POST(request: Request) {
       continue;
     }
 
+    // Esse CNPJ já é de outro cliente com nome bem diferente — provavelmente
+    // um CNPJ repetido/errado na planilha (ou um placeholder reaproveitado
+    // pra dois clientes distintos), não a mesma empresa mudando de nome. Sem
+    // essa trava, o upsert por CNPJ mesclaria os dois silenciosamente,
+    // sobrescrevendo o cliente antigo com os dados do novo.
+    if (existing?.nome && normalizeKey(existing.nome) !== normalizeKey(nome)) {
+      results.push({
+        cnpj,
+        nome,
+        status: "erro",
+        mensagem: `Este CNPJ já pertence a "${existing.nome}" no sistema — não foi alterado, para não misturar dois clientes diferentes. Confira se o CNPJ desta linha está correto na planilha.`,
+      });
+      continue;
+    }
+
     const consultorUsername = row.consultor
       ? sanitizeUsername(row.consultor)
       : "";
@@ -158,14 +185,6 @@ export async function POST(request: Request) {
       : user.id;
     const consultorNaoEncontrado =
       isAdmin && consultorUsername && !consultoresByUsername.has(consultorUsername);
-
-    const { data: existing } = await supabase
-      .from("clients")
-      .select(
-        "id, cidade, comprador, perfil_comprador, porte, historico_qtd_compras, historico_faturamento_total, historico_primeira_compra, historico_ultima_compra, aniversario_empresa",
-      )
-      .eq("cnpj", cnpj)
-      .maybeSingle();
 
     // Campos de histórico: se a planilha não trouxer a coluna nesta
     // reimportação, preserva o que já estava salvo em vez de zerar.
@@ -183,6 +202,7 @@ export async function POST(request: Request) {
       : (existing?.historico_ultima_compra ?? null);
     const cidade = row.cidade?.trim() || existing?.cidade || null;
     const comprador = row.comprador?.trim() || existing?.comprador || null;
+    const contato = row.contato?.trim() || existing?.contato || null;
     const aniversarioEmpresa = isValidISODate(row.aniversario_empresa)
       ? row.aniversario_empresa
       : (existing?.aniversario_empresa ?? null);
@@ -200,7 +220,7 @@ export async function POST(request: Request) {
         razao_social,
         telefone,
         email,
-        contato: row.contato?.trim() || null,
+        contato,
         comprador,
         segmento,
         endereco,
