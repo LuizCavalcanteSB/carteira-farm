@@ -10,13 +10,24 @@ export async function signIn(_prevState: unknown, formData: FormData) {
   const next = String(formData.get("next") ?? "/");
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: usernameToEmail(username),
     password,
   });
 
   if (error) {
     return { error: "Usuário ou senha inválidos." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("ativo")
+    .eq("id", data.user.id)
+    .single();
+
+  if (profile && profile.ativo === false) {
+    await supabase.auth.signOut();
+    return { error: "Esta conta foi desativada. Fale com o administrador." };
   }
 
   redirect(next || "/");

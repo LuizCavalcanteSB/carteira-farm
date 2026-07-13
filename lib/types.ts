@@ -6,6 +6,7 @@ export type Profile = {
   username: string;
   role: Role;
   avatar_path: string | null;
+  ativo: boolean;
   created_at: string;
 };
 

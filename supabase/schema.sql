@@ -7,6 +7,9 @@ create table public.profiles (
   username text not null unique check (username ~ '^[a-z0-9._-]{3,32}$'),
   role text not null default 'consultor' check (role in ('consultor', 'admin')),
   avatar_path text,
+  -- desativação reversível de acesso (admin bloqueia login sem apagar
+  -- login/dados — ver app/login/actions.ts e app/(app)/admin).
+  ativo boolean not null default true,
   created_at timestamptz not null default now()
 );
 
