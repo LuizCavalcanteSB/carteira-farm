@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { salvarCampoConsultor, salvarMetaGlobal } from "./actions";
 
 type Linha = {
@@ -40,6 +41,67 @@ export function PainelDiarioClient({
   const [linhas, setLinhas] = useState(linhasIniciais);
   const [erro, setErro] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+
+  // Sincronização ao vivo: qualquer edição de qualquer pessoa (em qualquer
+  // sessão/navegador) chega aqui via Supabase Realtime e atualiza a tela na
+  // hora, sem precisar de refresh — é um quadro compartilhado pelo time todo.
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`painel-diario-${data}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "painel_diario_meta",
+          filter: `data=eq.${data}`,
+        },
+        (payload) => {
+          const novaMeta = (payload.new as { meta_diaria?: number })
+            ?.meta_diaria;
+          if (typeof novaMeta === "number") setMetaGlobal(novaMeta);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "painel_diario_consultor",
+          filter: `data=eq.${data}`,
+        },
+        (payload) => {
+          const linha = payload.new as {
+            consultant_id?: string;
+            meta_individual?: number;
+            vtv?: number;
+            quantidade_vendas?: number;
+            ligacoes?: number;
+          };
+          if (!linha?.consultant_id) return;
+          setLinhas((prev) =>
+            prev.map((l) =>
+              l.consultant_id === linha.consultant_id
+                ? {
+                    ...l,
+                    meta_individual: linha.meta_individual ?? l.meta_individual,
+                    vtv: linha.vtv ?? l.vtv,
+                    quantidade_vendas:
+                      linha.quantidade_vendas ?? l.quantidade_vendas,
+                    ligacoes: linha.ligacoes ?? l.ligacoes,
+                  }
+                : l,
+            ),
+          );
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [data]);
 
   function atualizarLinha(
     consultantId: string,
@@ -108,6 +170,7 @@ export function PainelDiarioClient({
         <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
           <p className="text-xs uppercase text-zinc-500">Meta diária (time)</p>
           <input
+            key={`meta-global-${metaGlobal}`}
             type="number"
             step="0.01"
             min="0"
@@ -158,6 +221,7 @@ export function PainelDiarioClient({
                   <td className="px-4 py-2 font-medium text-zinc-900">{l.nome}</td>
                   <td className="px-4 py-2">
                     <input
+                      key={`meta-${l.consultant_id}-${l.meta_individual}`}
                       type="number"
                       step="0.01"
                       min="0"
@@ -174,6 +238,7 @@ export function PainelDiarioClient({
                   </td>
                   <td className="px-4 py-2">
                     <input
+                      key={`vtv-${l.consultant_id}-${l.vtv}`}
                       type="number"
                       step="0.01"
                       min="0"
@@ -186,6 +251,7 @@ export function PainelDiarioClient({
                   </td>
                   <td className="px-4 py-2">
                     <input
+                      key={`qtd-${l.consultant_id}-${l.quantidade_vendas}`}
                       type="number"
                       min="0"
                       step="1"
@@ -205,6 +271,7 @@ export function PainelDiarioClient({
                   </td>
                   <td className="px-4 py-2">
                     <input
+                      key={`ligacoes-${l.consultant_id}-${l.ligacoes}`}
                       type="number"
                       min="0"
                       step="1"
