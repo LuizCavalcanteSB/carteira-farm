@@ -4,7 +4,8 @@ import { formatCnpj, onlyDigits } from "@/lib/cnpj";
 import { formatDateOnly } from "@/lib/date";
 import { fetchAllRows } from "@/lib/paginate";
 import { SearchBar } from "./search-bar";
-import type { ClientStatus } from "@/lib/types";
+import { ContatoStatusSelect } from "./contato-status-select";
+import type { ClientStatus, ContatoStatus } from "@/lib/types";
 
 const STATUS_LABEL: Record<ClientStatus, string> = {
   ativo: "Ativo",
@@ -59,7 +60,7 @@ export default async function DashboardPage({
 
   let query = supabase
     .from("clients")
-    .select("id, nome, cnpj, status, segmento, consultant_id")
+    .select("id, nome, cnpj, status, segmento, consultant_id, contato_status")
     .order("nome");
 
   if (q) {
@@ -211,7 +212,7 @@ export default async function DashboardPage({
               return (
                 <tr key={client.id} className="hover:bg-zinc-50">
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/clientes/${client.id}`}
                         className="font-medium text-zinc-900 hover:underline"
@@ -226,6 +227,10 @@ export default async function DashboardPage({
                           ⚠ incompleto
                         </span>
                       )}
+                      <ContatoStatusSelect
+                        clientId={client.id}
+                        status={client.contato_status as ContatoStatus | null}
+                      />
                     </div>
                   </td>
                   <td className="px-4 py-3 text-zinc-600">

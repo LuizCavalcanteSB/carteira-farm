@@ -67,6 +67,11 @@ create table public.clients (
   -- data de fundação/aniversário da empresa cliente (dia/mês se repete todo
   -- ano; usado para avisar quando o aniversário estiver chegando perto)
   aniversario_empresa date,
+  -- controle de contato do dashboard (menu ao lado do nome do cliente) —
+  -- null = nenhum contato registrado ainda.
+  contato_status text check (
+    contato_status in ('realizado', 'tentativa', 'nao_realizado')
+  ),
   consultant_id uuid not null references public.profiles (id),
   created_at timestamptz not null default now(),
   -- auditoria: quem mexeu por último e quando (importação, edição manual,
