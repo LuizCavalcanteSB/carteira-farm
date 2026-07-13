@@ -19,6 +19,23 @@ export async function createClientRecord(
     return { error: "CNPJ inválido — deve ter 14 dígitos." };
   }
 
+  const valorPedidoEntradaRaw = String(
+    formData.get("valor_pedido_entrada") ?? "",
+  ).trim();
+  const dataPedidoEntrada = String(
+    formData.get("data_pedido_entrada") ?? "",
+  ).trim();
+  const valorPedidoEntrada = valorPedidoEntradaRaw
+    ? Number(valorPedidoEntradaRaw)
+    : 0;
+
+  if (valorPedidoEntrada > 0 && !dataPedidoEntrada) {
+    return { error: "Informe a data do pedido de entrada." };
+  }
+  if (dataPedidoEntrada && !(valorPedidoEntrada > 0)) {
+    return { error: "Informe o valor do pedido de entrada." };
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
@@ -51,6 +68,14 @@ export async function createClientRecord(
       aniversario_empresa:
         String(formData.get("aniversario_empresa") ?? "") || null,
       consultant_id: consultantId,
+      ...(valorPedidoEntrada > 0 && dataPedidoEntrada
+        ? {
+            historico_qtd_compras: 1,
+            historico_faturamento_total: valorPedidoEntrada,
+            historico_primeira_compra: dataPedidoEntrada,
+            historico_ultima_compra: dataPedidoEntrada,
+          }
+        : {}),
     })
     .select("id")
     .single();

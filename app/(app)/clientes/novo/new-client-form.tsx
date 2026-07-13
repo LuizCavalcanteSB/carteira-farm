@@ -204,6 +204,36 @@ export function NewClientForm({
         />
       </Field>
 
+      <div className="rounded-md border border-chumbo/10 bg-zinc-50 p-3">
+        <p className="text-sm font-medium text-chumbo">
+          Pedido de entrada (opcional)
+        </p>
+        <p className="mt-1 text-xs text-zinc-500">
+          Se o cliente já fechou um pedido com você antes de entrar na
+          carteira, preencha o valor e a data abaixo — o card dele já entra
+          com o valor comprado e a data. Esse pedido não conta como venda
+          recorrente na meta mensal.
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-4">
+          <Field label="Valor do pedido">
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              name="valor_pedido_entrada"
+              className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+            />
+          </Field>
+          <Field label="Data do pedido">
+            <input
+              type="date"
+              name="data_pedido_entrada"
+              className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+            />
+          </Field>
+        </div>
+      </div>
+
       {consultores && (
         <Field label="Consultor responsável">
           <select
