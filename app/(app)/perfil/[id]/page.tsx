@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAllRows } from "@/lib/paginate";
 import { AvatarUpload } from "./avatar-upload";
 import { MonthPicker } from "./month-picker";
 import { GoalEditor } from "./goal-editor";
@@ -70,14 +71,22 @@ export default async function PerfilPage({
   // por URL já derrubou o dashboard uma vez com listas grandes (ver
   // app/(app)/page.tsx). Aqui a lista já é pequena (carteira de 1 consultor),
   // mas mantemos o padrão seguro e filtramos client-side.
+  //
+  // Busca paginada: acima do limite padrão de linhas do PostgREST (1000), um
+  // único .select() sem range corta o restante silenciosamente.
   const [{ data: allOrders }, { data: allStats }] = clientIds.length
     ? await Promise.all([
-        supabase
-          .from("orders")
-          .select("id, client_id, valor, data_pedido")
-          .gte("data_pedido", startDate)
-          .lt("data_pedido", endDate),
-        supabase.from("client_stats").select("client_id, pedidos"),
+        fetchAllRows((from, to) =>
+          supabase
+            .from("orders")
+            .select("id, client_id, valor, data_pedido")
+            .gte("data_pedido", startDate)
+            .lt("data_pedido", endDate)
+            .range(from, to),
+        ),
+        fetchAllRows((from, to) =>
+          supabase.from("client_stats").select("client_id, pedidos").range(from, to),
+        ),
       ])
     : [{ data: [] }, { data: [] }];
 

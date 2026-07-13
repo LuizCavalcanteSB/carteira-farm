@@ -11,6 +11,7 @@ import {
   PERIODO_PEDIDO_LABEL,
   type PeriodoPedido,
 } from "@/lib/alertas";
+import { fetchAllRows } from "@/lib/paginate";
 import { ConsultorFilter } from "./consultor-filter";
 import { MesFilter } from "./mes-filter";
 
@@ -60,9 +61,12 @@ export default async function AlertasPage({
   // Sem .in() por lista de client_id — a mesma consulta filtrada por URL já
   // zerou o dashboard uma vez com listas grandes (ver app/(app)/page.tsx). A
   // RLS de client_stats já escopa pra só o que este usuário pode ver.
-  const { data: allStats } = await supabase
-    .from("client_stats")
-    .select("client_id, ultimo_pedido");
+  //
+  // Busca paginada: acima do limite padrão de linhas do PostgREST (1000),
+  // um único .select() sem range corta o restante silenciosamente.
+  const { data: allStats } = await fetchAllRows((from, to) =>
+    supabase.from("client_stats").select("client_id, ultimo_pedido").range(from, to),
+  );
 
   const ultimoPedidoByClient = new Map(
     (allStats ?? [])

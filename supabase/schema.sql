@@ -68,10 +68,31 @@ create table public.clients (
   -- ano; usado para avisar quando o aniversário estiver chegando perto)
   aniversario_empresa date,
   consultant_id uuid not null references public.profiles (id),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  -- auditoria: quem mexeu por último e quando (importação, edição manual,
+  -- etc.) — permite conferir na hora se um registro foi tocado recentemente
+  -- em vez de depender de memória em caso de dado estranho.
+  updated_at timestamptz not null default now(),
+  updated_by uuid references public.profiles (id)
 );
 
 create extension if not exists pg_trgm;
+
+create or replace function public.set_clients_updated_audit()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  new.updated_at := now();
+  new.updated_by := auth.uid();
+  return new;
+end;
+$$;
+
+create trigger before_clients_write_set_audit
+  before insert or update on public.clients
+  for each row execute procedure public.set_clients_updated_audit();
 
 create index clients_consultant_id_idx on public.clients (consultant_id);
 create index clients_nome_idx on public.clients using gin (nome gin_trgm_ops);

@@ -54,6 +54,8 @@ export type Client = {
   aniversario_empresa: string | null;
   consultant_id: string;
   created_at: string;
+  updated_at: string;
+  updated_by: string | null;
 };
 
 export type Order = {

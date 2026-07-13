@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatCnpj, onlyDigits } from "@/lib/cnpj";
 import { formatDateOnly } from "@/lib/date";
+import { fetchAllRows } from "@/lib/paginate";
 import { SearchBar } from "./search-bar";
 import type { ClientStatus } from "@/lib/types";
 
@@ -78,22 +79,33 @@ export default async function DashboardPage({
   // Sem filtro por client_id aqui de propósito: a RLS de client_stats/
   // client_notes/order_photos já escopa pra só o que este usuário pode ver
   // (própria carteira, ou tudo se admin). Filtrar com .in() numa lista de
-  // dezenas/centenas de UUIDs gera uma query string enorme que pode falhar —
-  // e como esse erro não era checado, uma falha aqui zerava a tela inteira
-  // silenciosamente em vez de avisar.
+  // dezenas/centenas de UUIDs gera uma query string enorme que pode falhar.
+  //
+  // Busca paginada (fetchAllRows) em vez de um único .select() sem range:
+  // o PostgREST tem um limite padrão de linhas por resposta (1000) — acima
+  // disso o restante é cortado silenciosamente, fazendo clientes aleatórios
+  // aparecerem com pedidos/observações/fotos zerados sem nenhum dado ter
+  // sido realmente apagado.
   const [
     { data: stats, error: statsError },
     { data: notes, error: notesError },
     { data: photos, error: photosError },
   ] = await Promise.all([
-    supabase
-      .from("client_stats")
-      .select("client_id, pedidos, total_comprado, ultimo_pedido"),
-    supabase.from("client_notes").select("client_id"),
-    supabase.from("order_photos").select("client_id"),
+    fetchAllRows((from, to) =>
+      supabase
+        .from("client_stats")
+        .select("client_id, pedidos, total_comprado, ultimo_pedido")
+        .range(from, to),
+    ),
+    fetchAllRows((from, to) =>
+      supabase.from("client_notes").select("client_id").range(from, to),
+    ),
+    fetchAllRows((from, to) =>
+      supabase.from("order_photos").select("client_id").range(from, to),
+    ),
   ]);
 
-  const statsErro = statsError || notesError || photosError ? true : false;
+  const statsErro = statsError || notesError || photosError;
 
   const statsByClient = new Map((stats ?? []).map((s) => [s.client_id, s]));
 
