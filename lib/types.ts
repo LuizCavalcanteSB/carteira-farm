@@ -33,6 +33,8 @@ export type Porte = "grande" | "medio" | "pequeno";
 
 export type ContatoStatus = "realizado" | "tentativa" | "nao_realizado";
 
+export type Origem = "manual" | "planilha";
+
 export type Client = {
   id: string;
   nome: string;
@@ -55,6 +57,7 @@ export type Client = {
   historico_ultima_compra: string | null;
   aniversario_empresa: string | null;
   contato_status: ContatoStatus | null;
+  origem: Origem;
   consultant_id: string;
   created_at: string;
   updated_at: string;

@@ -67,6 +67,7 @@ export async function createClientRecord(
       porte: String(formData.get("porte") ?? "") || null,
       aniversario_empresa:
         String(formData.get("aniversario_empresa") ?? "") || null,
+      origem: "manual",
       consultant_id: consultantId,
       ...(valorPedidoEntrada > 0 && dataPedidoEntrada
         ? {

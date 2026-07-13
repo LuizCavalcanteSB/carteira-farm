@@ -72,6 +72,13 @@ create table public.clients (
   contato_status text check (
     contato_status in ('realizado', 'tentativa', 'nao_realizado')
   ),
+  -- de onde veio o cadastro — usado no dashboard para "Adicionados
+  -- recentemente" mostrar só quem foi cadastrado manualmente em "Novo
+  -- cliente", sem misturar com o volume de importação de planilha. Default
+  -- 'planilha' porque é o caminho de importação em massa (não seta este
+  -- campo no upsert, então cai no default em linhas novas e não mexe em
+  -- linhas existentes); "Novo cliente" seta 'manual' explicitamente.
+  origem text not null default 'planilha' check (origem in ('manual', 'planilha')),
   consultant_id uuid not null references public.profiles (id),
   created_at timestamptz not null default now(),
   -- auditoria: quem mexeu por último e quando (importação, edição manual,

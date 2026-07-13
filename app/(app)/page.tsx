@@ -67,7 +67,7 @@ export default async function DashboardPage({
   let query = supabase
     .from("clients")
     .select(
-      "id, nome, cnpj, status, segmento, consultant_id, contato_status, created_at",
+      "id, nome, cnpj, status, segmento, consultant_id, contato_status, created_at, origem",
     )
     .order("nome");
 
@@ -131,7 +131,10 @@ export default async function DashboardPage({
     (consultores ?? []).map((c) => [c.id, c.nome]),
   );
 
-  const linhas = (clients ?? []).map((client) => {
+  // "Adicionados recentemente" só deve mostrar quem foi cadastrado à mão em
+  // Novo cliente — a importação de planilha não conta aqui, mesmo que tenha
+  // criado o registro há pouco tempo (ver coluna clients.origem).
+  const todasLinhas = (clients ?? []).map((client) => {
     const stat = statsByClient.get(client.id);
     return {
       client,
@@ -144,6 +147,11 @@ export default async function DashboardPage({
         (photosCountByClient.get(client.id) ?? 0) === 0,
     };
   });
+
+  const linhas =
+    ordenar === "recentes"
+      ? todasLinhas.filter((l) => l.client.origem === "manual")
+      : todasLinhas;
 
   const totais = linhas.reduce(
     (acc, l) => ({
