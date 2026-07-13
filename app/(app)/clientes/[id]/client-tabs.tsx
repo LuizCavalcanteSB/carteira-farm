@@ -7,6 +7,7 @@ import {
   addNote,
   addOrder,
   deleteLink,
+  deleteNota,
   deleteOrder,
   deletePhoto,
   editarNota,
@@ -137,12 +138,29 @@ function NotesTab({
                   {note.author?.nome ?? "—"} ·{" "}
                   {new Date(note.created_at).toLocaleString("pt-BR")}
                 </p>
-                <button
-                  onClick={() => setEditingId(note.id)}
-                  className="text-xs text-chumbo hover:underline"
-                >
-                  Editar
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditingId(note.id)}
+                    className="text-xs text-chumbo hover:underline"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Tem certeza que deseja excluir esta observação? Essa ação não pode ser desfeita.",
+                        )
+                      ) {
+                        startTransition(() => deleteNota(clientId, note.id));
+                      }
+                    }}
+                    disabled={isPending}
+                    className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                  >
+                    Remover
+                  </button>
+                </div>
               </div>
             </li>
           ),

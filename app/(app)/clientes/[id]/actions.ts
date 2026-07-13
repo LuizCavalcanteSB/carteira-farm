@@ -40,6 +40,12 @@ export async function editarNota(
   return { error: null };
 }
 
+export async function deleteNota(clientId: string, noteId: string) {
+  const supabase = await createClient();
+  await supabase.from("client_notes").delete().eq("id", noteId);
+  revalidatePath(`/clientes/${clientId}`);
+}
+
 export async function addOrder(clientId: string, formData: FormData) {
   const valor = Number(formData.get("valor") ?? 0);
   const data_pedido = String(formData.get("data_pedido") ?? "");
