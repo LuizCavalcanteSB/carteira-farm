@@ -64,25 +64,47 @@ export default async function PerfilPage({
 
   const clientIds = (clientRows ?? []).map((c) => c.id);
   const clientNomeById = new Map((clientRows ?? []).map((c) => [c.id, c.nome]));
+  const clientIdsSet = new Set(clientIds);
 
-  const { data: orders } = clientIds.length
-    ? await supabase
-        .from("orders")
-        .select("id, client_id, valor, data_pedido")
-        .in("client_id", clientIds)
-        .gte("data_pedido", startDate)
-        .lt("data_pedido", endDate)
-    : { data: [] };
+  // Sem .in() por lista de client_id de propósito — a mesma consulta filtrada
+  // por URL já derrubou o dashboard uma vez com listas grandes (ver
+  // app/(app)/page.tsx). Aqui a lista já é pequena (carteira de 1 consultor),
+  // mas mantemos o padrão seguro e filtramos client-side.
+  const [{ data: allOrders }, { data: allStats }] = clientIds.length
+    ? await Promise.all([
+        supabase
+          .from("orders")
+          .select("id, client_id, valor, data_pedido")
+          .gte("data_pedido", startDate)
+          .lt("data_pedido", endDate),
+        supabase.from("client_stats").select("client_id, pedidos"),
+      ])
+    : [{ data: [] }, { data: [] }];
 
-  const totalPedidos = orders?.length ?? 0;
-  const valorTotal = (orders ?? []).reduce((sum, o) => sum + Number(o.valor), 0);
+  const pedidosTotaisByClient = new Map(
+    (allStats ?? [])
+      .filter((s) => clientIdsSet.has(s.client_id))
+      .map((s) => [s.client_id, s.pedidos]),
+  );
+
+  // Pedido de cliente novo (0 ou 1 pedido no total, somando histórico
+  // importado + pedidos ao vivo) não conta na meta do consultor — é o
+  // pedido de entrada do cliente na carteira, não uma venda recorrente.
+  const orders = (allOrders ?? []).filter(
+    (o) =>
+      clientIdsSet.has(o.client_id) &&
+      (pedidosTotaisByClient.get(o.client_id) ?? 0) > 1,
+  );
+
+  const totalPedidos = orders.length;
+  const valorTotal = orders.reduce((sum, o) => sum + Number(o.valor), 0);
   const ticketMedio = totalPedidos > 0 ? valorTotal / totalPedidos : 0;
 
   const porClienteMap = new Map<
     string,
     { nome: string; pedidos: number; valor: number }
   >();
-  for (const o of orders ?? []) {
+  for (const o of orders) {
     const atual = porClienteMap.get(o.client_id) ?? {
       nome: clientNomeById.get(o.client_id) ?? "—",
       pedidos: 0,
@@ -149,6 +171,11 @@ export default async function PerfilPage({
                 valorMeta={valorMeta}
               />
             </div>
+            <p className="mt-2 text-xs text-zinc-400">
+              O primeiro pedido de um cliente novo (0 ou 1 pedido no total)
+              não entra nessa conta — é a entrada dele na carteira, não uma
+              venda recorrente.
+            </p>
           </div>
         </div>
       </div>

@@ -89,13 +89,10 @@ export type ClientLink = {
   created_at: string;
 };
 
-export type PainelDiarioConsultor = {
+export type Mimo = {
   id: string;
-  consultant_id: string;
-  data: string;
-  meta_individual: number;
-  vtv: number;
-  quantidade_vendas: number;
-  ligacoes: number;
-  updated_at: string;
+  client_id: string;
+  observacao: string | null;
+  data_envio: string | null;
+  created_at: string;
 };

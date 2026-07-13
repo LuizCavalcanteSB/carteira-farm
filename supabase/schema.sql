@@ -131,30 +131,10 @@ create table public.metas_mensais (
   unique (consultant_id, ano, mes)
 );
 
--- 8. Painel diário — quadro do time inteiro, visível e editável por todos os
--- autenticados (não é escopado por consultor como o resto do app).
-create table public.painel_diario_meta (
-  data date primary key,
-  meta_diaria numeric(12, 2) not null default 0,
-  updated_at timestamptz not null default now()
-);
-
-create table public.painel_diario_consultor (
-  id uuid primary key default gen_random_uuid(),
-  consultant_id uuid not null references public.profiles (id),
-  data date not null default current_date,
-  meta_individual numeric(12, 2) not null default 0,
-  vtv numeric(12, 2) not null default 0,
-  quantidade_vendas int not null default 0,
-  ligacoes int not null default 0,
-  updated_at timestamptz not null default now(),
-  unique (consultant_id, data)
-);
-
--- 9. Anotações manuais de pesquisa de CNPJ (busca livre, não ligada a um
+-- 8. Anotações manuais de pesquisa de CNPJ (busca livre, não ligada a um
 -- cliente cadastrado) — dados que não existem em nenhuma base pública/
 -- gratuita (estimativa de funcionários, eventos que a empresa participa),
--- preenchidos pelo time e compartilhados entre todos, como o painel diário.
+-- preenchidos pelo time e compartilhados entre todos.
 create table public.cnpj_pesquisas (
   cnpj text primary key check (cnpj ~ '^\d{14}$'),
   estimativa_funcionarios text,
@@ -162,6 +142,17 @@ create table public.cnpj_pesquisas (
   updated_at timestamptz not null default now(),
   updated_by uuid references public.profiles (id)
 );
+
+-- 9. Cadastro de mimo — presente/brinde agendado para envio a um cliente.
+create table public.mimos (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references public.clients (id) on delete cascade,
+  observacao text,
+  data_envio date,
+  created_at timestamptz not null default now()
+);
+
+create index mimos_client_id_idx on public.mimos (client_id);
 
 -- 10. View com estatísticas agregadas por cliente (nº de pedidos, total
 -- comprado, ticket médio, data do último pedido). security_invoker faz a view
@@ -214,9 +205,8 @@ alter table public.client_notes enable row level security;
 alter table public.order_photos enable row level security;
 alter table public.client_links enable row level security;
 alter table public.metas_mensais enable row level security;
-alter table public.painel_diario_meta enable row level security;
-alter table public.painel_diario_consultor enable row level security;
 alter table public.cnpj_pesquisas enable row level security;
+alter table public.mimos enable row level security;
 
 -- helper: papel do usuário logado
 create function public.current_role()
@@ -304,22 +294,7 @@ create policy "metas_all_own_or_admin"
   using (consultant_id = auth.uid() or public.current_role() = 'admin')
   with check (consultant_id = auth.uid() or public.current_role() = 'admin');
 
--- painel_diario_*: quadro do time inteiro — qualquer autenticado vê e edita
--- qualquer linha (não é escopado por dono, ao contrário do resto do app).
-create policy "painel_meta_all_authenticated"
-  on public.painel_diario_meta for all
-  to authenticated
-  using (true)
-  with check (true);
-
-create policy "painel_consultor_all_authenticated"
-  on public.painel_diario_consultor for all
-  to authenticated
-  using (true)
-  with check (true);
-
--- cnpj_pesquisas: mesma lógica do painel diário — anotação compartilhada,
--- qualquer autenticado vê e edita.
+-- cnpj_pesquisas: anotação compartilhada — qualquer autenticado vê e edita.
 create policy "cnpj_pesquisas_all_authenticated"
   on public.cnpj_pesquisas for all
   to authenticated
@@ -395,6 +370,24 @@ create policy "links_all_own_or_admin"
     exists (
       select 1 from public.clients c
       where c.id = client_links.client_id
+        and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
+    )
+  );
+
+create policy "mimos_all_own_or_admin"
+  on public.mimos for all
+  to authenticated
+  using (
+    exists (
+      select 1 from public.clients c
+      where c.id = mimos.client_id
+        and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.clients c
+      where c.id = mimos.client_id
         and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
     )
   );
