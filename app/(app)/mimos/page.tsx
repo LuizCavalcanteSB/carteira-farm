@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateOnly } from "@/lib/date";
+import { fetchAllRows } from "@/lib/paginate";
 import { ConsultorFilter } from "./consultor-filter";
 import { MimoForm } from "./mimo-form";
 import { RemoverMimoButton } from "./remover-button";
@@ -41,7 +42,9 @@ export default async function MimosPage({
   if (isAdmin && consultor) {
     clientesQuery = clientesQuery.eq("consultant_id", consultor);
   }
-  const { data: clientes } = await clientesQuery;
+  const { data: clientes } = await fetchAllRows((from, to) =>
+    clientesQuery.range(from, to),
+  );
 
   let mimosQuery = supabase
     .from("mimos")

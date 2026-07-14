@@ -55,7 +55,9 @@ export default async function AlertasPage({
     clientQuery = clientQuery.eq("consultant_id", consultor);
   }
 
-  const { data: clients } = await clientQuery;
+  const { data: clients } = await fetchAllRows((from, to) =>
+    clientQuery.range(from, to),
+  );
   const clientIds = new Set((clients ?? []).map((c) => c.id));
 
   // Sem .in() por lista de client_id — a mesma consulta filtrada por URL já

@@ -60,7 +60,13 @@ export default async function PerfilPage({
       .eq("ano", ano)
       .eq("mes", mes)
       .maybeSingle(),
-    supabase.from("clients").select("id, nome").eq("consultant_id", id),
+    fetchAllRows((from, to) =>
+      supabase
+        .from("clients")
+        .select("id, nome")
+        .eq("consultant_id", id)
+        .range(from, to),
+    ),
   ]);
 
   const clientIds = (clientRows ?? []).map((c) => c.id);

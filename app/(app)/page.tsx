@@ -83,7 +83,12 @@ export default async function DashboardPage({
     query = query.eq("consultant_id", consultor);
   }
 
-  const { data: clients } = await query;
+  // fetchAllRows: mesma razão de sempre — sem paginação, o PostgREST corta
+  // silenciosamente acima de 1000 linhas, travando a lista/contadores do
+  // dashboard num teto de 1000 clientes mesmo com mais cadastrados.
+  const { data: clients } = await fetchAllRows((from, to) =>
+    query.range(from, to),
+  );
 
   // Sem filtro por client_id aqui de propósito: a RLS de client_stats/
   // client_notes/order_photos já escopa pra só o que este usuário pode ver
