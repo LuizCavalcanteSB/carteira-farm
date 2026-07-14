@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { fetchAllRows } from "@/lib/paginate";
 import { ImportForm } from "./import-form";
 import { DangerZone } from "./danger-zone";
 
@@ -20,7 +21,9 @@ export default async function ImportPage() {
   if (isAdmin) {
     const [{ data: consultores }, { data: clientes }] = await Promise.all([
       supabase.from("profiles").select("id, nome").order("nome"),
-      supabase.from("clients").select("consultant_id"),
+      fetchAllRows((from, to) =>
+        supabase.from("clients").select("consultant_id").range(from, to),
+      ).then((r) => ({ data: r.data })),
     ]);
 
     const totalPorConsultor = new Map<string, number>();

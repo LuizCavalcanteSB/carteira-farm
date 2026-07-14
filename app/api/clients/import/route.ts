@@ -3,6 +3,10 @@ import { lookupCnpj, onlyDigits } from "@/lib/cnpj";
 import { sanitizeUsername } from "@/lib/username";
 import { NextResponse } from "next/server";
 
+// O cliente (import-form.tsx) já envia em lotes pequenos para nunca chegar
+// perto do limite — isto é só uma margem extra de segurança.
+export const maxDuration = 60;
+
 type ImportRow = {
   nome?: string;
   cnpj?: string;

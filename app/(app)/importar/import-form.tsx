@@ -43,12 +43,22 @@ type ImportResultRow = {
   mensagem?: string;
 };
 
+// Importações grandes num único request estouram o tempo limite da função
+// serverless (Vercel mata a função no meio, sem devolver erro nenhum pro
+// navegador — o resultado é uma parte silenciosamente não importada, com a
+// planilha inteira parecendo ter "sumido" sem aviso). Enviando em lotes
+// pequenos, cada request termina bem dentro do limite, e dá pra mostrar
+// progresso e continuar de onde parou se um lote falhar.
+const TAMANHO_LOTE = 15;
+
 export function ImportForm() {
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [progresso, setProgresso] = useState<{ feitos: number; total: number } | null>(null);
   const [results, setResults] = useState<ImportResultRow[] | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   async function handleFile(file: File) {
     setParseError(null);
@@ -134,18 +144,45 @@ export function ImportForm() {
 
   async function handleImport() {
     setIsSubmitting(true);
-    setResults(null);
+    setImportError(null);
+    const acumulado: ImportResultRow[] = [];
+    setResults(acumulado);
+    setProgresso({ feitos: 0, total: rows.length });
 
     try {
-      const res = await fetch("/api/clients/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rows }),
-      });
-      const data = await res.json();
-      setResults(data.results ?? []);
+      for (let i = 0; i < rows.length; i += TAMANHO_LOTE) {
+        const lote = rows.slice(i, i + TAMANHO_LOTE);
+        try {
+          const res = await fetch("/api/clients/import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rows: lote }),
+          });
+          if (!res.ok) {
+            throw new Error(`Falha no lote (status ${res.status})`);
+          }
+          const data = await res.json();
+          acumulado.push(...(data.results ?? []));
+        } catch {
+          for (const row of lote) {
+            acumulado.push({
+              cnpj: row.cnpj ?? "",
+              nome: row.nome ?? "",
+              status: "erro",
+              mensagem:
+                "Falha de conexão neste lote — não foi importado. Rode a importação de novo (linhas já importadas são apenas atualizadas de novo, sem duplicar).",
+            });
+          }
+          setImportError(
+            "Alguns lotes falharam por instabilidade de conexão — veja os erros marcados na lista abaixo e rode a importação de novo para tentar essas linhas.",
+          );
+        }
+        setResults([...acumulado]);
+        setProgresso({ feitos: Math.min(i + TAMANHO_LOTE, rows.length), total: rows.length });
+      }
     } finally {
       setIsSubmitting(false);
+      setProgresso(null);
     }
   }
 
@@ -173,9 +210,21 @@ export function ImportForm() {
               disabled={isSubmitting}
               className="rounded-md bg-chumbo px-4 py-2 text-sm font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
             >
-              {isSubmitting ? "Importando..." : `Importar ${rows.length} cliente(s)`}
+              {isSubmitting
+                ? `Importando... (${progresso?.feitos ?? 0}/${progresso?.total ?? rows.length})`
+                : `Importar ${rows.length} cliente(s)`}
             </button>
           </div>
+          {isSubmitting && progresso && (
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
+              <div
+                className="h-full bg-chumbo transition-all"
+                style={{
+                  width: `${Math.round((progresso.feitos / progresso.total) * 100)}%`,
+                }}
+              />
+            </div>
+          )}
 
           <div className="mt-3 max-h-96 overflow-auto rounded-lg border border-chumbo/10 bg-white shadow-sm">
             <table className="w-full text-sm">
@@ -208,10 +257,15 @@ export function ImportForm() {
         </div>
       )}
 
+      {importError && (
+        <p className="mt-4 text-sm text-red-600">{importError}</p>
+      )}
+
       {results && (
         <div className="mt-6 rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
           <h2 className="text-sm font-semibold text-chumbo">
             Resultado da importação
+            {isSubmitting ? " (em andamento...)" : ` (${results.length}/${rows.length})`}
           </h2>
           <ul className="mt-2 flex flex-col gap-1 text-sm">
             {results.map((r, i) => (
