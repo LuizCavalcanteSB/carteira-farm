@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatCnpj } from "@/lib/cnpj";
+import { formatCpf } from "@/lib/cpf";
 import { formatDateOnly } from "@/lib/date";
 import { ClientTabs } from "./client-tabs";
 import { BirthdayEditor } from "./birthday-editor";
@@ -85,7 +86,9 @@ export default async function ClientPage({
             {client.razao_social && client.razao_social !== client.nome
               ? `${client.razao_social} · `
               : ""}
-            CNPJ {formatCnpj(client.cnpj)}
+            {client.cnpj
+              ? `CNPJ ${formatCnpj(client.cnpj)}`
+              : `CPF ${formatCpf(client.cpf)}`}
           </p>
         </div>
         <span className="rounded-full bg-chumbo px-3 py-1 text-xs font-medium text-brand">

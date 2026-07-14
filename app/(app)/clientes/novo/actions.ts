@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { onlyDigits } from "@/lib/cnpj";
+import { isValidCpf } from "@/lib/cpf";
 import { redirect } from "next/navigation";
 
 export async function createClientRecord(
@@ -14,10 +15,21 @@ export async function createClientRecord(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sessão expirada, faça login novamente." };
 
-  const cnpj = onlyDigits(String(formData.get("cnpj") ?? ""));
-  if (cnpj.length !== 14) {
+  const cnpjRaw = onlyDigits(String(formData.get("cnpj") ?? ""));
+  const cpfRaw = onlyDigits(String(formData.get("cpf") ?? ""));
+
+  if (!cnpjRaw && !cpfRaw) {
+    return { error: "Informe CNPJ ou CPF." };
+  }
+  if (cnpjRaw && cnpjRaw.length !== 14) {
     return { error: "CNPJ inválido — deve ter 14 dígitos." };
   }
+  if (cpfRaw && !isValidCpf(cpfRaw)) {
+    return { error: "CPF inválido." };
+  }
+
+  const cnpj = cnpjRaw || null;
+  const cpf = cpfRaw || null;
 
   const valorPedidoEntradaRaw = String(
     formData.get("valor_pedido_entrada") ?? "",
@@ -52,6 +64,7 @@ export async function createClientRecord(
     .insert({
       nome: String(formData.get("nome") ?? ""),
       cnpj,
+      cpf,
       razao_social: String(formData.get("razao_social") ?? "") || null,
       telefone: String(formData.get("telefone") ?? "") || null,
       email: String(formData.get("email") ?? "") || null,
@@ -82,9 +95,11 @@ export async function createClientRecord(
     .single();
 
   if (error) {
-    return {
-      error: error.code === "23505" ? "Já existe um cliente com esse CNPJ." : error.message,
-    };
+    if (error.code === "23505") {
+      const campo = error.message.includes("cpf") ? "CPF" : "CNPJ";
+      return { error: `Já existe um cliente com esse ${campo}.` };
+    }
+    return { error: error.message };
   }
 
   redirect(`/clientes/${client.id}`);

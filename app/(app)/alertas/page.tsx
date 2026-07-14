@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatCnpj } from "@/lib/cnpj";
+import { formatCpf } from "@/lib/cpf";
 import { formatDateOnly } from "@/lib/date";
 import {
   ANIVERSARIO_SEM_ALERTA_COLOR,
@@ -48,7 +49,7 @@ export default async function AlertasPage({
 
   let clientQuery = supabase
     .from("clients")
-    .select("id, nome, cnpj, status, consultant_id, aniversario_empresa")
+    .select("id, nome, cnpj, cpf, status, consultant_id, aniversario_empresa")
     .order("nome");
 
   if (isAdmin && consultor) {
@@ -157,7 +158,7 @@ export default async function AlertasPage({
             <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
               <tr>
                 <th className="px-4 py-3">Cliente</th>
-                <th className="px-4 py-3">CNPJ</th>
+                <th className="px-4 py-3">CNPJ/CPF</th>
                 {isAdmin && <th className="px-4 py-3">Consultor</th>}
                 <th className="px-4 py-3">Último pedido</th>
               </tr>
@@ -174,7 +175,7 @@ export default async function AlertasPage({
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-zinc-600">
-                    {formatCnpj(client.cnpj)}
+                    {client.cnpj ? formatCnpj(client.cnpj) : formatCpf(client.cpf)}
                   </td>
                   {isAdmin && (
                     <td className="px-4 py-3 text-zinc-600">

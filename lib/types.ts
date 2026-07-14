@@ -38,7 +38,8 @@ export type Origem = "manual" | "planilha";
 export type Client = {
   id: string;
   nome: string;
-  cnpj: string;
+  cnpj: string | null;
+  cpf: string | null;
   razao_social: string | null;
   telefone: string | null;
   email: string | null;

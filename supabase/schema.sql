@@ -42,7 +42,11 @@ create trigger on_auth_user_created
 create table public.clients (
   id uuid primary key default gen_random_uuid(),
   nome text not null,
-  cnpj text not null unique check (cnpj ~ '^\d{14}$'), -- somente dígitos, sem máscara
+  -- cnpj (empresa) ou cpf (pessoa física) — um cliente tem pelo menos um dos
+  -- dois (ver constraint clients_cnpj_ou_cpf abaixo). Ambos só dígitos, sem
+  -- máscara, e o dígito verificador do CPF é validado na aplicação, não aqui.
+  cnpj text unique check (cnpj ~ '^\d{14}$'),
+  cpf text unique check (cpf ~ '^\d{11}$'),
   razao_social text,
   telefone text,
   email text,
@@ -85,7 +89,8 @@ create table public.clients (
   -- etc.) — permite conferir na hora se um registro foi tocado recentemente
   -- em vez de depender de memória em caso de dado estranho.
   updated_at timestamptz not null default now(),
-  updated_by uuid references public.profiles (id)
+  updated_by uuid references public.profiles (id),
+  constraint clients_cnpj_ou_cpf check (cnpj is not null or cpf is not null)
 );
 
 create extension if not exists pg_trgm;

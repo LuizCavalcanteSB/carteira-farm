@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { createClientRecord } from "./actions";
 import { formatCnpj, isValidCnpjLength, onlyDigits } from "@/lib/cnpj";
 import type { CnpjLookupResult } from "@/lib/cnpj";
+import { formatCpf, isValidCpf, isValidCpfLength } from "@/lib/cpf";
 import { PERFIL_COMPRADOR_OPTIONS, PORTE_OPTIONS } from "@/lib/labels";
 
 export function NewClientForm({
@@ -16,9 +17,11 @@ export function NewClientForm({
     undefined,
   );
   const [cnpj, setCnpj] = useState("");
+  const [cpf, setCpf] = useState("");
   const [lookup, setLookup] = useState<CnpjLookupResult | null>(null);
   const [isLooking, setIsLooking] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const cpfInvalido = isValidCpfLength(cpf) && !isValidCpf(cpf);
 
   async function handleCnpjBlur() {
     if (!isValidCnpjLength(cnpj)) return;
@@ -42,28 +45,47 @@ export function NewClientForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <Field label="CNPJ">
-        <input
-          name="cnpj"
-          required
-          value={cnpj}
-          onChange={(e) => setCnpj(formatCnpj(e.target.value))}
-          onBlur={handleCnpjBlur}
-          placeholder="00.000.000/0000-00"
-          className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
-        />
-        {isLooking && (
-          <p className="mt-1 text-xs text-zinc-500">Consultando Receita Federal...</p>
-        )}
-        {lookupError && (
-          <p className="mt-1 text-xs text-amber-600">{lookupError}</p>
-        )}
-        {lookup && (
-          <p className="mt-1 text-xs text-green-700">
-            Dados encontrados e preenchidos automaticamente.
-          </p>
-        )}
-      </Field>
+      <p className="text-xs text-zinc-500">
+        Informe CNPJ (empresa) ou CPF (pessoa física) — pelo menos um dos
+        dois.
+      </p>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="CNPJ">
+          <input
+            name="cnpj"
+            value={cnpj}
+            onChange={(e) => setCnpj(formatCnpj(e.target.value))}
+            onBlur={handleCnpjBlur}
+            placeholder="00.000.000/0000-00"
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          />
+          {isLooking && (
+            <p className="mt-1 text-xs text-zinc-500">Consultando Receita Federal...</p>
+          )}
+          {lookupError && (
+            <p className="mt-1 text-xs text-amber-600">{lookupError}</p>
+          )}
+          {lookup && (
+            <p className="mt-1 text-xs text-green-700">
+              Dados encontrados e preenchidos automaticamente.
+            </p>
+          )}
+        </Field>
+
+        <Field label="CPF">
+          <input
+            name="cpf"
+            value={cpf}
+            onChange={(e) => setCpf(formatCpf(e.target.value))}
+            placeholder="000.000.000-00"
+            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          />
+          {cpfInvalido && (
+            <p className="mt-1 text-xs text-red-600">CPF inválido.</p>
+          )}
+        </Field>
+      </div>
 
       <Field label="Nome / apelido do cliente">
         <input

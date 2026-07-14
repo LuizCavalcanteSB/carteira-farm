@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatCnpj, onlyDigits } from "@/lib/cnpj";
+import { formatCpf } from "@/lib/cpf";
 import { formatDateOnly } from "@/lib/date";
 import { fetchAllRows } from "@/lib/paginate";
 import { SearchBar } from "./search-bar";
@@ -67,7 +68,7 @@ export default async function DashboardPage({
   let query = supabase
     .from("clients")
     .select(
-      "id, nome, cnpj, status, segmento, consultant_id, contato_status, created_at, origem",
+      "id, nome, cnpj, cpf, status, segmento, consultant_id, contato_status, created_at, origem",
     )
     .order("nome");
 
@@ -75,7 +76,9 @@ export default async function DashboardPage({
     const digits = onlyDigits(q);
     query =
       digits.length >= 3
-        ? query.or(`nome.ilike.%${q}%,cnpj.ilike.%${digits}%`)
+        ? query.or(
+            `nome.ilike.%${q}%,cnpj.ilike.%${digits}%,cpf.ilike.%${digits}%`,
+          )
         : query.ilike("nome", `%${q}%`);
   }
 
@@ -195,7 +198,7 @@ export default async function DashboardPage({
           {isAdmin ? "Todas as carteiras" : "Minha carteira"}
         </h1>
         <p className="text-sm text-chumbo-light">
-          Busque um cliente pelo nome ou CNPJ.
+          Busque um cliente pelo nome, CNPJ ou CPF.
         </p>
       </div>
 
@@ -226,7 +229,7 @@ export default async function DashboardPage({
           <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
             <tr>
               <th className="px-4 py-3">Cliente</th>
-              <th className="px-4 py-3">CNPJ</th>
+              <th className="px-4 py-3">CNPJ/CPF</th>
               <th className="px-4 py-3">Status</th>
               {isAdmin && <th className="px-4 py-3">Consultor</th>}
               <th className="px-4 py-3">Pedidos</th>
@@ -264,7 +267,7 @@ export default async function DashboardPage({
                     </div>
                   </td>
                   <td className="px-4 py-3 text-zinc-600">
-                    {formatCnpj(client.cnpj)}
+                    {client.cnpj ? formatCnpj(client.cnpj) : formatCpf(client.cpf)}
                   </td>
                   <td className="px-4 py-3">
                     <span

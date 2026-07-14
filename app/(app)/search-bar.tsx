@@ -38,7 +38,7 @@ export function SearchBar({
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar por nome ou CNPJ..."
+        placeholder="Buscar por nome, CNPJ ou CPF..."
         className="w-full max-w-md rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
       />
       <button
