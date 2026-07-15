@@ -6,46 +6,38 @@ export function OwlLogo({ className = "h-8 w-8" }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* orelhas em tufo */}
+      {/* orelhas em tufo, fundidas direto na faixa da sobrancelha (sem lacuna) */}
       <path
-        d="M14 32 L11 8 L24 20 L34 11 L28 34 Z"
-        fill="var(--brand)"
-      />
-      <path
-        d="M86 32 L89 8 L76 20 L66 11 L72 34 Z"
-        fill="var(--brand)"
-      />
-
-      {/* cabeça / corpo */}
-      <path
-        d="M18 34
-           Q18 16 34 16
-           L66 16
-           Q82 16 82 34
-           L82 62
-           Q82 90 50 93
-           Q18 90 18 62
-           Z"
+        d="M18,32 L10,28 L6,8 L16,20 L12,4 L24,18 L22,2 L34,22 L42,26 L50,36
+           L58,26 L66,22 L78,2 L76,18 L88,4 L84,20 L94,8 L90,28 L82,32
+           Q66,40 58,42 Q50,46 42,42 Q34,40 18,32 Z"
         fill="var(--brand)"
       />
 
-      {/* crista central entre os olhos */}
-      <path d="M50 30 L58 50 L42 50 Z" fill="var(--chumbo)" />
+      {/* rosto com bordas serrilhadas (textura de penas), afunilando até o queixo */}
+      <path
+        d="M18,32 L10,40 L20,48 L12,58 L24,66 L18,76 L32,82 L26,90 L50,97
+           L74,90 L68,82 L82,76 L76,66 L88,58 L80,48 L90,40 L82,32
+           Q66,40 58,42 Q50,46 42,42 Q34,40 18,32 Z"
+        fill="var(--brand)"
+      />
 
-      {/* olhos (vazados, cor de fundo) */}
-      <circle cx="35" cy="50" r="13" fill="var(--chumbo)" />
-      <circle cx="65" cy="50" r="13" fill="var(--chumbo)" />
-      <circle cx="35" cy="50" r="4" fill="var(--brand)" />
-      <circle cx="65" cy="50" r="4" fill="var(--brand)" />
+      {/* olhos (vazados, cor de fundo) com pupila dourada */}
+      <circle cx="32" cy="50" r="13" fill="var(--chumbo)" />
+      <circle cx="68" cy="50" r="13" fill="var(--chumbo)" />
+      <circle cx="32" cy="50" r="13" fill="none" stroke="var(--brand)" strokeWidth="1.5" />
+      <circle cx="68" cy="50" r="13" fill="none" stroke="var(--brand)" strokeWidth="1.5" />
+      <circle cx="32" cy="50" r="4.5" fill="var(--brand)" />
+      <circle cx="68" cy="50" r="4.5" fill="var(--brand)" />
 
       {/* bico */}
-      <path d="M45 62 L55 62 L50 76 Z" fill="var(--chumbo)" />
+      <path d="M50,56 L58,64 L50,78 L42,64 Z" fill="var(--chumbo)" />
 
       {/* penas do peito */}
       <path
-        d="M26 78 L32 68 L38 78 L44 66 L50 80 L56 66 L62 78 L68 68 L74 78"
+        d="M28,84 L34,76 L40,84 L50,74 L60,84 L66,76 L72,84"
         stroke="var(--chumbo)"
-        strokeWidth="3"
+        strokeWidth="2.5"
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
