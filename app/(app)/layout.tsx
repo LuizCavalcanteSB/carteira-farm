@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { limiteNotificacaoEntrega } from "@/lib/notifications";
 import { Sidebar } from "./sidebar";
 
 export default async function AppLayout({
@@ -29,12 +30,24 @@ export default async function AppLayout({
     avatarUrl = data?.signedUrl ?? null;
   }
 
+  const isAdmin = profile?.role === "admin";
+  let notificacoesQuery = supabase
+    .from("clients")
+    .select("id", { count: "exact", head: true })
+    .not("prazo_entrega", "is", null)
+    .lte("prazo_entrega", limiteNotificacaoEntrega());
+  if (!isAdmin) {
+    notificacoesQuery = notificacoesQuery.eq("consultant_id", user.id);
+  }
+  const { count: notificacoesCount } = await notificacoesQuery;
+
   return (
     <div className="flex min-h-full flex-col md:flex-row">
       <Sidebar
         nome={profile?.nome ?? ""}
         role={profile?.role ?? "consultor"}
         avatarUrl={avatarUrl}
+        notificacoesCount={notificacoesCount ?? 0}
       />
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
         {children}

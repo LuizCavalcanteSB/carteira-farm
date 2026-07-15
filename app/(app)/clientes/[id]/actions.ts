@@ -156,6 +156,20 @@ export async function setAniversario(clientId: string, data: string) {
   return { error: null };
 }
 
+export async function setPrazoEntrega(clientId: string, data: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clients")
+    .update({ prazo_entrega: data || null })
+    .eq("id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  revalidatePath("/notificacoes");
+  return { error: null };
+}
+
 // Reatribuir a carteira de um cliente para outro consultor — só admin. A
 // policy de update de `clients` permite o dono atual gravar em qualquer
 // coluna da própria linha (não restringe consultant_id), então a checagem

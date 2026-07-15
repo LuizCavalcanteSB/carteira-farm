@@ -7,6 +7,7 @@ import { ClientTabs } from "./client-tabs";
 import { BirthdayEditor } from "./birthday-editor";
 import { ClientInfoEditor } from "./client-info-editor";
 import { ConsultorEditor } from "./consultor-editor";
+import { PrazoEntregaEditor } from "./prazo-entrega-editor";
 import type { ClientStatus, PerfilComprador, Porte } from "@/lib/types";
 
 const STATUS_LABEL: Record<ClientStatus, string> = {
@@ -167,6 +168,10 @@ export default async function ClientPage({
           <BirthdayEditor
             clientId={client.id}
             aniversarioEmpresa={client.aniversario_empresa}
+          />
+          <PrazoEntregaEditor
+            clientId={client.id}
+            prazoEntrega={client.prazo_entrega}
           />
         </div>
       </div>

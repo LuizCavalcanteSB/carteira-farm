@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { ESTAGIOS_CONTATO, type EstagioContato } from "@/lib/kanban";
 
 export async function atualizarContatoStatus(
   clientId: string,
@@ -32,6 +33,28 @@ export async function confirmarPrimeiroContato(clientId: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/");
+  revalidatePath("/novos-contatos");
+  return { error: null };
+}
+
+// Move o card entre as colunas do kanban de /novos-contatos (arrastar ou
+// pelo select de fallback no card).
+export async function moverEstagioContato(
+  clientId: string,
+  estagio: string,
+) {
+  if (!ESTAGIOS_CONTATO.includes(estagio as EstagioContato)) {
+    return { error: "Etapa inválida." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clients")
+    .update({ estagio_contato: estagio })
+    .eq("id", clientId);
+
+  if (error) return { error: error.message };
+
   revalidatePath("/novos-contatos");
   return { error: null };
 }

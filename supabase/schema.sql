@@ -85,12 +85,22 @@ create table public.clients (
   origem text not null default 'planilha' check (origem in ('manual', 'planilha')),
   -- fila de "novos contatos": cliente cadastrado manualmente só entra de
   -- fato na carteira do consultor (aparece no dashboard/alertas/metas)
-  -- depois que alguém confirma o primeiro contato em /novos-contatos. Campo
-  -- separado do contato_status de propósito — se o contato_status for
-  -- resetado pra "Sem contato" depois, o cliente não deve sumir da carteira
-  -- de novo. Default true porque importação de planilha nunca passa por
-  -- essa fila (é carteira que já existe, não lead novo).
+  -- depois que o card é arrastado pra coluna "Incluir na carteira" em
+  -- /novos-contatos. Campo separado do contato_status de propósito — se o
+  -- contato_status for resetado pra "Sem contato" depois, o cliente não deve
+  -- sumir da carteira de novo. Default true porque importação de planilha
+  -- nunca passa por essa fila (é carteira que já existe, não lead novo).
   na_carteira boolean not null default true,
+  -- etapa do funil kanban em /novos-contatos, enquanto na_carteira = false.
+  -- Sem significado depois que o cliente entra na carteira.
+  estagio_contato text not null default 'contato_novo' check (
+    estagio_contato in (
+      'contato_novo', 'apresentacao_realizada', 'em_producao', 'pedido_entregue'
+    )
+  ),
+  -- data prevista de entrega do pedido em andamento — usado pra avisar em
+  -- /notificacoes quando faltarem 3 dias ou menos (ou já tiver passado).
+  prazo_entrega date,
   consultant_id uuid not null references public.profiles (id),
   created_at timestamptz not null default now(),
   -- auditoria: quem mexeu por último e quando (importação, edição manual,

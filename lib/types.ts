@@ -1,3 +1,5 @@
+import type { EstagioContato } from "./kanban";
+
 export type Role = "consultor" | "admin";
 
 export type Profile = {
@@ -60,6 +62,8 @@ export type Client = {
   contato_status: ContatoStatus | null;
   origem: Origem;
   na_carteira: boolean;
+  estagio_contato: EstagioContato;
+  prazo_entrega: string | null;
   consultant_id: string;
   created_at: string;
   updated_at: string;
