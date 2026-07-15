@@ -45,6 +45,7 @@ export async function limparClientesDoConsultor(consultantId: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/importar");
-  revalidatePath("/");
+  // Apaga todos os clientes do consultor — zera as notificações dele no sino.
+  revalidatePath("/", "layout");
   return { error: null, quantidade: clientIds.length };
 }

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { onlyDigits } from "@/lib/cnpj";
 import { isValidCpf } from "@/lib/cpf";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function createClientRecord(
   _prevState: unknown,
@@ -105,5 +106,9 @@ export async function createClientRecord(
     return { error: error.message };
   }
 
+  // O sino de notificações roda no layout compartilhado do app — sem essa
+  // revalidação de tipo "layout", ele continuaria mostrando a lista antiga
+  // até uma navegação que não reaproveitasse o cache do layout.
+  revalidatePath("/", "layout");
   redirect(`/clientes/${client.id}`);
 }

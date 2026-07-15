@@ -32,7 +32,7 @@ export async function confirmarPrimeiroContato(clientId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   revalidatePath("/novos-contatos");
   return { error: null };
 }
@@ -55,6 +55,9 @@ export async function moverEstagioContato(
 
   if (error) return { error: error.message };
 
+  // Sair de "contato_novo" tira o card da notificação de novo contato no
+  // sino, que roda no layout compartilhado do app.
+  revalidatePath("/", "layout");
   revalidatePath("/novos-contatos");
   return { error: null };
 }

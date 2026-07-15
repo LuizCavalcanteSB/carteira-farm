@@ -153,6 +153,8 @@ export async function setAniversario(clientId: string, data: string) {
   if (error) return { error: error.message };
 
   revalidatePath(`/clientes/${clientId}`);
+  // O sino de notificações lê aniversario_empresa no layout compartilhado.
+  revalidatePath("/", "layout");
   return { error: null };
 }
 
@@ -166,7 +168,8 @@ export async function setPrazoEntrega(clientId: string, data: string) {
   if (error) return { error: error.message };
 
   revalidatePath(`/clientes/${clientId}`);
-  revalidatePath("/");
+  // O sino de notificações lê prazo_entrega no layout compartilhado.
+  revalidatePath("/", "layout");
   return { error: null };
 }
 
@@ -203,6 +206,7 @@ export async function reassignConsultant(
   if (error) return { error: error.message };
 
   revalidatePath(`/clientes/${clientId}`);
-  revalidatePath("/");
+  // Reatribuir muda quem deve ver as notificações desse cliente no sino.
+  revalidatePath("/", "layout");
   return { error: null };
 }
