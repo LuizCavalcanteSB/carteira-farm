@@ -83,7 +83,7 @@ export function KanbanBoard({
           {error}
         </p>
       )}
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="grid grid-cols-5 gap-3">
         {colunas.map((coluna) => {
           const cardsDaColuna =
             coluna.id === INCLUIR_NA_CARTEIRA
@@ -108,7 +108,7 @@ export function KanbanBoard({
                 const clientId = e.dataTransfer.getData("text/plain");
                 if (clientId) moverCard(clientId, coluna.id);
               }}
-              className={`flex w-72 shrink-0 flex-col rounded-lg border transition-colors ${
+              className={`flex min-w-0 flex-col rounded-lg border transition-colors ${
                 isDraggedOver
                   ? "border-brand bg-brand/5"
                   : isDropTarget
@@ -116,17 +116,17 @@ export function KanbanBoard({
                     : "border-chumbo/10 bg-zinc-50"
               }`}
             >
-              <div className="flex items-center gap-2 rounded-t-lg border-b border-chumbo/10 px-3 py-2">
+              <div className="flex min-w-0 items-center gap-2 rounded-t-lg border-b border-chumbo/10 px-3 py-2">
                 {!isDropTarget && (
                   <span
-                    className={`h-2 w-2 rounded-full ${ESTAGIO_CONTATO_COLOR[coluna.id as EstagioContato]}`}
+                    className={`h-2 w-2 shrink-0 rounded-full ${ESTAGIO_CONTATO_COLOR[coluna.id as EstagioContato]}`}
                   />
                 )}
-                <span className="text-sm font-semibold text-chumbo">
+                <span className="min-w-0 truncate text-sm font-semibold text-chumbo">
                   {coluna.label}
                 </span>
                 {!isDropTarget && (
-                  <span className="ml-auto rounded-full bg-white px-2 py-0.5 text-xs text-zinc-500">
+                  <span className="ml-auto shrink-0 rounded-full bg-white px-2 py-0.5 text-xs text-zinc-500">
                     {cardsDaColuna.length}
                   </span>
                 )}
@@ -153,31 +153,31 @@ export function KanbanBoard({
                   >
                     <Link
                       href={`/clientes/${card.id}`}
-                      className="font-medium text-zinc-900 hover:underline"
+                      className="break-words font-medium text-zinc-900 hover:underline"
                     >
                       {card.nome}
                     </Link>
-                    <p className="mt-0.5 text-xs text-zinc-500">
+                    <p className="mt-0.5 truncate text-xs text-zinc-500">
                       {card.cnpj ? formatCnpj(card.cnpj) : formatCpf(card.cpf ?? "")}
                     </p>
                     {isAdmin && (
-                      <p className="mt-1 text-xs text-zinc-500">
+                      <p className="mt-1 truncate text-xs text-zinc-500">
                         {consultorNomeById[card.consultantId] ?? "—"}
                       </p>
                     )}
-                    <p className="mt-1 text-xs text-zinc-400">
+                    <p className="mt-1 truncate text-xs text-zinc-400">
                       Adicionado em{" "}
                       {new Date(card.createdAt).toLocaleDateString("pt-BR")}
                     </p>
 
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       <select
                         value={card.estagio}
                         disabled={isPending}
                         onChange={(e) =>
                           moverCard(card.id, e.target.value as EstagioContato)
                         }
-                        className="rounded-md border border-chumbo/20 px-1.5 py-1 text-xs focus:border-brand focus:outline-none disabled:opacity-50"
+                        className="w-full min-w-0 rounded-md border border-chumbo/20 px-1.5 py-1 text-xs focus:border-brand focus:outline-none disabled:opacity-50"
                       >
                         {ESTAGIOS_CONTATO.map((e) => (
                           <option key={e} value={e}>
@@ -188,7 +188,7 @@ export function KanbanBoard({
                       <button
                         onClick={() => moverCard(card.id, INCLUIR_NA_CARTEIRA)}
                         disabled={isPending}
-                        className="ml-auto rounded-md bg-chumbo px-2 py-1 text-xs font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+                        className="ml-auto shrink-0 rounded-md bg-chumbo px-2 py-1 text-xs font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
                       >
                         Incluir
                       </button>

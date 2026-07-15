@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { limiteNotificacaoEntrega } from "@/lib/notifications";
 import { Sidebar } from "./sidebar";
+import { MainContent } from "./main-content";
 
 export default async function AppLayout({
   children,
@@ -49,9 +50,7 @@ export default async function AppLayout({
         avatarUrl={avatarUrl}
         notificacoesCount={notificacoesCount ?? 0}
       />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
-        {children}
-      </main>
+      <MainContent>{children}</MainContent>
     </div>
   );
 }
