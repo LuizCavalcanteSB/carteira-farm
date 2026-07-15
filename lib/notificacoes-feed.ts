@@ -1,12 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchAllRows } from "./paginate";
 import { limiteNotificacaoEntrega } from "./notifications";
-import { calcularProximoAniversario } from "./alertas";
+import { calcularProximoAniversario, diasDesde } from "./alertas";
 
 export type NotificationItem = {
   clientId: string;
   clientName: string;
-  kind: "entrega" | "aniversario";
+  kind: "novo_contato" | "entrega" | "aniversario";
   message: string;
   diasRestantes: number;
 };
@@ -26,13 +26,29 @@ function mensagemEntrega(dias: number) {
   return `Pedido chega em ${dias} dia${dias === 1 ? "" : "s"}`;
 }
 
-/** Feed combinado (prazo de entrega + aniversário de empresa) pro sininho de
- * notificações, ordenado do mais urgente pro menos urgente. */
+function mensagemNovoContato(diasDesdeCriacao: number) {
+  if (diasDesdeCriacao <= 0) return "Novo contato adicionado, aguardando abordagem";
+  return `Aguardando primeiro contato há ${diasDesdeCriacao} dia${diasDesdeCriacao === 1 ? "" : "s"}`;
+}
+
+/** Feed combinado (novo contato + prazo de entrega + aniversário de
+ * empresa) pro sininho de notificações, ordenado do mais urgente pro
+ * menos urgente. */
 export async function buildNotificationFeed(
   supabase: SupabaseClient,
   userId: string,
   isAdmin: boolean,
 ): Promise<NotificationItem[]> {
+  let novoContatoQuery = supabase
+    .from("clients")
+    .select("id, nome, consultant_id, created_at")
+    .eq("na_carteira", false)
+    .eq("estagio_contato", "contato_novo");
+  if (!isAdmin) novoContatoQuery = novoContatoQuery.eq("consultant_id", userId);
+  const { data: novosContatos } = await fetchAllRows((from, to) =>
+    novoContatoQuery.range(from, to),
+  );
+
   let entregaQuery = supabase
     .from("clients")
     .select("id, nome, consultant_id, prazo_entrega")
@@ -52,6 +68,17 @@ export async function buildNotificationFeed(
   const { data: aniversarios } = await fetchAllRows((from, to) =>
     aniversarioQuery.range(from, to),
   );
+
+  const itensNovoContato: NotificationItem[] = (novosContatos ?? []).map((c) => {
+    const dias = diasDesde(c.created_at as string);
+    return {
+      clientId: c.id,
+      clientName: c.nome,
+      kind: "novo_contato",
+      message: mensagemNovoContato(dias),
+      diasRestantes: -dias,
+    };
+  });
 
   const itensEntrega: NotificationItem[] = (entregas ?? []).map((c) => {
     const dias = diasRestantesEntrega(c.prazo_entrega as string);
@@ -78,7 +105,7 @@ export async function buildNotificationFeed(
       diasRestantes: info.diasRestantes,
     }));
 
-  return [...itensEntrega, ...itensAniversario].sort(
+  return [...itensNovoContato, ...itensEntrega, ...itensAniversario].sort(
     (a, b) => a.diasRestantes - b.diasRestantes,
   );
 }

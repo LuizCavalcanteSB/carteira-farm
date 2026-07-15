@@ -9,7 +9,6 @@ import {
   Upload,
   Users,
   Bell,
-  BellRing,
   Gift,
   Search,
   PhoneCall,
@@ -26,7 +25,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/clientes/novo", label: "Novo cliente", icon: UserPlus },
   { href: "/novos-contatos", label: "Novos contatos", icon: PhoneCall },
-  { href: "/notificacoes", label: "Notificações", icon: BellRing },
   { href: "/mimos", label: "Cadastro de Mimo", icon: Gift },
   { href: "/busca-cnpj", label: "Busca CNPJ", icon: Search },
   { href: "/importar", label: "Importar planilha", icon: Upload },
@@ -37,13 +35,11 @@ function SidebarContent({
   nome,
   role,
   avatarUrl,
-  notificacoesCount,
   onNavigate,
 }: {
   nome: string;
   role: string;
   avatarUrl: string | null;
-  notificacoesCount: number;
   onNavigate: () => void;
 }) {
   const pathname = usePathname();
@@ -116,11 +112,6 @@ function SidebarContent({
             >
               <Icon size={18} />
               {item.label}
-              {item.href === "/notificacoes" && notificacoesCount > 0 && (
-                <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-semibold text-white">
-                  {notificacoesCount}
-                </span>
-              )}
             </Link>
           );
         })}
@@ -140,12 +131,10 @@ export function Sidebar({
   nome,
   role,
   avatarUrl,
-  notificacoesCount,
 }: {
   nome: string;
   role: string;
   avatarUrl: string | null;
-  notificacoesCount: number;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -185,7 +174,6 @@ export function Sidebar({
               nome={nome}
               role={role}
               avatarUrl={avatarUrl}
-              notificacoesCount={notificacoesCount}
               onNavigate={() => setIsOpen(false)}
             />
           </div>
@@ -202,7 +190,6 @@ export function Sidebar({
           nome={nome}
           role={role}
           avatarUrl={avatarUrl}
-          notificacoesCount={notificacoesCount}
           onNavigate={() => {}}
         />
       </aside>

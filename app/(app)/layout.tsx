@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { limiteNotificacaoEntrega } from "@/lib/notifications";
 import { buildNotificationFeed } from "@/lib/notificacoes-feed";
 import { Sidebar } from "./sidebar";
 import { MainContent } from "./main-content";
@@ -34,16 +33,6 @@ export default async function AppLayout({
   }
 
   const isAdmin = profile?.role === "admin";
-  let notificacoesQuery = supabase
-    .from("clients")
-    .select("id", { count: "exact", head: true })
-    .not("prazo_entrega", "is", null)
-    .lte("prazo_entrega", limiteNotificacaoEntrega());
-  if (!isAdmin) {
-    notificacoesQuery = notificacoesQuery.eq("consultant_id", user.id);
-  }
-  const { count: notificacoesCount } = await notificacoesQuery;
-
   const notifications = await buildNotificationFeed(supabase, user.id, isAdmin);
 
   return (
@@ -52,7 +41,6 @@ export default async function AppLayout({
         nome={profile?.nome ?? ""}
         role={profile?.role ?? "consultor"}
         avatarUrl={avatarUrl}
-        notificacoesCount={notificacoesCount ?? 0}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar notifications={notifications} />

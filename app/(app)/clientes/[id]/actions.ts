@@ -166,7 +166,7 @@ export async function setPrazoEntrega(clientId: string, data: string) {
   if (error) return { error: error.message };
 
   revalidatePath(`/clientes/${clientId}`);
-  revalidatePath("/notificacoes");
+  revalidatePath("/");
   return { error: null };
 }
 

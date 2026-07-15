@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Bell, Cake, Truck } from "lucide-react";
+import { Bell, Cake, PhoneCall, Truck } from "lucide-react";
 import type { NotificationItem } from "@/lib/notificacoes-feed";
 
 export function NotificationBell({ items }: { items: NotificationItem[] }) {
@@ -58,10 +58,18 @@ export function NotificationBell({ items }: { items: NotificationItem[] }) {
                   className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                     item.kind === "entrega"
                       ? "bg-brand/15 text-brand-dark dark:bg-brand/20 dark:text-brand"
-                      : "bg-sky-500/15 text-sky-600 dark:text-sky-400"
+                      : item.kind === "novo_contato"
+                        ? "bg-violet-500/15 text-violet-600 dark:text-violet-400"
+                        : "bg-sky-500/15 text-sky-600 dark:text-sky-400"
                   }`}
                 >
-                  {item.kind === "entrega" ? <Truck size={16} /> : <Cake size={16} />}
+                  {item.kind === "entrega" ? (
+                    <Truck size={16} />
+                  ) : item.kind === "novo_contato" ? (
+                    <PhoneCall size={16} />
+                  ) : (
+                    <Cake size={16} />
+                  )}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-chumbo dark:text-white">
