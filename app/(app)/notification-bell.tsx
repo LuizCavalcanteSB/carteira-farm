@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Bell, Cake, PhoneCall, Truck } from "lucide-react";
 import type { NotificationItem } from "@/lib/notificacoes-feed";
+import { marcarNotificacaoLida } from "./notificacoes-actions";
 
 export function NotificationBell({ items }: { items: NotificationItem[] }) {
   const [open, setOpen] = useState(false);
@@ -49,9 +50,12 @@ export function NotificationBell({ items }: { items: NotificationItem[] }) {
             )}
             {items.map((item) => (
               <Link
-                key={`${item.kind}-${item.clientId}`}
+                key={item.id}
                 href={`/clientes/${item.clientId}`}
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  setOpen(false);
+                  void marcarNotificacaoLida(item.id);
+                }}
                 className="flex items-start gap-3 border-b border-chumbo/5 px-4 py-3 last:border-b-0 hover:bg-zinc-50 dark:border-white/5 dark:hover:bg-white/5"
               >
                 <span
@@ -82,6 +86,13 @@ export function NotificationBell({ items }: { items: NotificationItem[] }) {
               </Link>
             ))}
           </div>
+          <Link
+            href="/notificacoes"
+            onClick={() => setOpen(false)}
+            className="block border-t border-chumbo/10 px-4 py-2.5 text-center text-xs font-medium text-chumbo hover:bg-zinc-50 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5"
+          >
+            Ver histórico de notificações
+          </Link>
         </div>
       )}
     </div>

@@ -213,6 +213,31 @@ create table public.mimos (
 
 create index mimos_client_id_idx on public.mimos (client_id);
 
+-- 10b. Notificações do sino — materializadas a cada carregamento de página
+-- (ver lib/notificacoes-feed.ts), não por um job agendado. `chave` é o
+-- identificador de deduplicação de cada "slot" de notificação (ex:
+-- "novo_contato:<client_id>", "entrega:<client_id>:<prazo_entrega>",
+-- "aniversario:<client_id>:<ano>") — um valor novo de chave gera uma
+-- notificação nova (não lida); o mesmo valor só atualiza a mensagem,
+-- preservando `lida_em`. `ativo` marca se a condição que gerou a notificação
+-- ainda é verdadeira agora (fica false quando resolve, ex: prazo cumprido ou
+-- contato confirmado) — o sino só mostra ativo=true e lida_em is null; a
+-- página de histórico mostra tudo, ativo ou não, lido ou não.
+create table public.notificacoes (
+  id uuid primary key default gen_random_uuid(),
+  consultant_id uuid not null references public.profiles (id),
+  client_id uuid not null references public.clients (id) on delete cascade,
+  kind text not null check (kind in ('novo_contato', 'entrega', 'aniversario')),
+  chave text not null,
+  mensagem text not null,
+  ativo boolean not null default true,
+  lida_em timestamptz,
+  created_at timestamptz not null default now(),
+  unique (consultant_id, chave)
+);
+
+create index notificacoes_consultant_id_idx on public.notificacoes (consultant_id);
+
 -- 10. View com estatísticas agregadas por cliente (nº de pedidos, total
 -- comprado, ticket médio, data do último pedido). security_invoker faz a view
 -- rodar com as permissões de quem consulta, então a RLS de `orders` continua
@@ -266,6 +291,7 @@ alter table public.client_links enable row level security;
 alter table public.metas_mensais enable row level security;
 alter table public.cnpj_pesquisas enable row level security;
 alter table public.mimos enable row level security;
+alter table public.notificacoes enable row level security;
 
 -- helper: papel do usuário logado
 create function public.current_role()
@@ -450,6 +476,15 @@ create policy "mimos_all_own_or_admin"
         and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
     )
   );
+
+-- notificacoes: consultor só vê/edita as próprias; admin vê/edita as de
+-- todos (o app materializa notificações de outros consultores no nome deles
+-- quando o admin, que enxerga a carteira toda, abre uma página).
+create policy "notificacoes_all_own_or_admin"
+  on public.notificacoes for all
+  to authenticated
+  using (consultant_id = auth.uid() or public.current_role() = 'admin')
+  with check (consultant_id = auth.uid() or public.current_role() = 'admin');
 
 -- ============================================================
 -- Storage: bucket para as fotos dos bonés
