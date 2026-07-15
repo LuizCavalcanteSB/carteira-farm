@@ -45,14 +45,14 @@ export function ConsultorEditor({
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       <p className="text-xs uppercase text-zinc-500">Consultor responsável</p>
-      <div className="mt-0.5 flex items-center gap-2">
+      <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-2">
         <select
           value={value}
           onChange={(e) => setValue(e.target.value)}
           disabled={isPending}
-          className="rounded-md border border-chumbo/20 px-2 py-1 text-sm focus:border-brand focus:outline-none disabled:opacity-50"
+          className="w-full min-w-0 truncate rounded-md border border-chumbo/20 px-2 py-1 text-sm focus:border-brand focus:outline-none disabled:opacity-50 sm:w-auto"
         >
           {consultores.map((c) => (
             <option key={c.id} value={c.id}>
