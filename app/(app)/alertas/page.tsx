@@ -122,8 +122,8 @@ export default async function AlertasPage({
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold text-chumbo">Alertas</h1>
-        <p className="text-sm text-chumbo-light">
+        <h1 className="text-2xl font-semibold text-white">Alertas</h1>
+        <p className="text-sm text-zinc-400">
           Clientes que precisam de atenção: sem pedido recente ou com
           aniversário de empresa chegando.
         </p>
@@ -137,7 +137,7 @@ export default async function AlertasPage({
       )}
 
       <section>
-        <h2 className="text-lg font-semibold text-chumbo">Pedidos parados</h2>
+        <h2 className="text-lg font-semibold text-white">Pedidos parados</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {PERIODOS.map((p) => (
             <Link
@@ -145,8 +145,8 @@ export default async function AlertasPage({
               href={hrefComPeriodo(p)}
               className={`rounded-full px-3 py-1.5 text-sm font-medium ${
                 periodo === p
-                  ? "bg-chumbo text-brand"
-                  : "border border-chumbo/20 bg-white text-chumbo hover:bg-zinc-50"
+                  ? "bg-brand text-chumbo"
+                  : "border border-white/20 bg-chumbo-light text-zinc-300 hover:bg-white/10"
               }`}
             >
               {PERIODO_PEDIDO_LABEL[p]} ({contagens[p] ?? 0})
@@ -154,9 +154,9 @@ export default async function AlertasPage({
           ))}
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm">
+        <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-chumbo-light shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
+            <thead className="bg-white/5 text-left text-xs uppercase text-zinc-400">
               <tr>
                 <th className="px-4 py-3">Cliente</th>
                 <th className="px-4 py-3">CNPJ/CPF</th>
@@ -164,26 +164,26 @@ export default async function AlertasPage({
                 <th className="px-4 py-3">Último pedido</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-white/10">
               {linhasPedidos.map(({ client, ultimoPedido }) => (
-                <tr key={client.id} className="hover:bg-zinc-50">
+                <tr key={client.id} className="hover:bg-white/5">
                   <td className="px-4 py-3">
                     <Link
                       href={`/clientes/${client.id}`}
-                      className="font-medium text-zinc-900 hover:underline"
+                      className="font-medium text-white hover:underline"
                     >
                       {client.nome}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600">
+                  <td className="px-4 py-3 text-zinc-300">
                     {client.cnpj ? formatCnpj(client.cnpj) : formatCpf(client.cpf)}
                   </td>
                   {isAdmin && (
-                    <td className="px-4 py-3 text-zinc-600">
+                    <td className="px-4 py-3 text-zinc-300">
                       {consultorNomeById.get(client.consultant_id) ?? "—"}
                     </td>
                   )}
-                  <td className="px-4 py-3 text-zinc-600">
+                  <td className="px-4 py-3 text-zinc-300">
                     {ultimoPedido ? formatDateOnly(ultimoPedido) : "—"}
                   </td>
                 </tr>
@@ -192,7 +192,7 @@ export default async function AlertasPage({
                 <tr>
                   <td
                     colSpan={isAdmin ? 4 : 3}
-                    className="px-4 py-8 text-center text-zinc-400"
+                    className="px-4 py-8 text-center text-zinc-500"
                   >
                     Nenhum cliente nessa faixa.
                   </td>
@@ -206,10 +206,10 @@ export default async function AlertasPage({
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-chumbo">
+            <h2 className="text-lg font-semibold text-white">
               Aniversários de empresa {mes ? `em ${MESES_LABEL[mes - 1]}` : "próximos"}
             </h2>
-            <p className="text-sm text-chumbo-light">
+            <p className="text-sm text-zinc-400">
               {mes
                 ? `Todos os clientes com aniversário de fundação em ${MESES_LABEL[mes - 1]}, em qualquer ano.`
                 : "Clientes com aniversário de fundação nos próximos 60 dias."}
@@ -218,9 +218,9 @@ export default async function AlertasPage({
           <MesFilter defaultMes={mes ? String(mes) : ""} />
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm">
+        <div className="mt-4 overflow-hidden rounded-lg border border-white/10 bg-chumbo-light shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
+            <thead className="bg-white/5 text-left text-xs uppercase text-zinc-400">
               <tr>
                 <th className="px-4 py-3">Cliente</th>
                 {isAdmin && <th className="px-4 py-3">Consultor</th>}
@@ -228,23 +228,23 @@ export default async function AlertasPage({
                 <th className="px-4 py-3">Faltam</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-white/10">
               {linhasAniversario.map(({ client, info }) => (
-                <tr key={client.id} className="hover:bg-zinc-50">
+                <tr key={client.id} className="hover:bg-white/5">
                   <td className="px-4 py-3">
                     <Link
                       href={`/clientes/${client.id}`}
-                      className="font-medium text-zinc-900 hover:underline"
+                      className="font-medium text-white hover:underline"
                     >
                       {client.nome}
                     </Link>
                   </td>
                   {isAdmin && (
-                    <td className="px-4 py-3 text-zinc-600">
+                    <td className="px-4 py-3 text-zinc-300">
                       {consultorNomeById.get(client.consultant_id) ?? "—"}
                     </td>
                   )}
-                  <td className="px-4 py-3 text-zinc-600">
+                  <td className="px-4 py-3 text-zinc-300">
                     {info.proximaData.toLocaleDateString("pt-BR")}
                   </td>
                   <td className="px-4 py-3">
@@ -262,7 +262,7 @@ export default async function AlertasPage({
                 <tr>
                   <td
                     colSpan={isAdmin ? 4 : 3}
-                    className="px-4 py-8 text-center text-zinc-400"
+                    className="px-4 py-8 text-center text-zinc-500"
                   >
                     {mes
                       ? `Nenhum cliente com aniversário em ${MESES_LABEL[mes - 1]}.`

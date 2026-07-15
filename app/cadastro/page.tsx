@@ -3,23 +3,23 @@ import { SignUpForm } from "./signup-form";
 
 export default function SignUpPage() {
   return (
-    <div className="flex flex-1 items-center justify-center bg-brand px-4">
-      <div className="w-full max-w-sm rounded-xl border border-chumbo/10 bg-white p-8 shadow-lg">
+    <div className="flex flex-1 items-center justify-center bg-chumbo px-4">
+      <div className="w-full max-w-sm rounded-xl border border-white/10 bg-chumbo-light p-8 shadow-lg">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/logo-cinza.svg"
+          src="/logo-branco.svg"
           alt="SeuBoné"
           width={131}
           height={32}
           style={{ width: 131, height: 32 }}
         />
-        <p className="mt-3 text-sm text-chumbo-light">
+        <p className="mt-3 text-sm text-zinc-400">
           Crie seu login de consultor.
         </p>
         <SignUpForm />
-        <p className="mt-4 text-center text-sm text-chumbo-light">
+        <p className="mt-4 text-center text-sm text-zinc-400">
           Já tem login?{" "}
-          <Link href="/login" className="font-medium text-chumbo hover:underline">
+          <Link href="/login" className="font-medium text-brand hover:text-brand-dark hover:underline">
             Entrar
           </Link>
         </p>

@@ -10,7 +10,7 @@ export function RemoverMimoButton({ mimoId }: { mimoId: string }) {
     <button
       onClick={() => startTransition(() => removerMimo(mimoId))}
       disabled={isPending}
-      className="text-xs text-red-600 hover:underline disabled:opacity-50"
+      className="text-xs text-red-400 hover:underline disabled:opacity-50"
     >
       Remover
     </button>

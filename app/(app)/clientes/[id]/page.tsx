@@ -93,10 +93,10 @@ export default async function ClientPage({
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-chumbo">
+          <h1 className="text-2xl font-semibold text-white">
             {client.nome}
           </h1>
-          <p className="text-sm text-chumbo-light">
+          <p className="text-sm text-zinc-400">
             {client.razao_social && client.razao_social !== client.nome
               ? `${client.razao_social} · `
               : ""}
@@ -105,7 +105,7 @@ export default async function ClientPage({
               : `CPF ${formatCpf(client.cpf)}`}
           </p>
         </div>
-        <span className="rounded-full bg-chumbo px-3 py-1 text-xs font-medium text-brand">
+        <span className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-chumbo">
           {STATUS_LABEL[client.status as ClientStatus]}
         </span>
       </div>
@@ -130,7 +130,7 @@ export default async function ClientPage({
         />
       </div>
 
-      <div className="rounded-lg border border-chumbo/10 bg-white p-4 text-sm shadow-sm">
+      <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 text-sm shadow-sm">
         <ClientInfoEditor
           clientId={client.id}
           info={{
@@ -147,7 +147,7 @@ export default async function ClientPage({
           }}
         />
 
-        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-zinc-100 pt-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-white/10 pt-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field
             label="Primeira compra"
             value={
@@ -176,7 +176,7 @@ export default async function ClientPage({
         </div>
       </div>
 
-      <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
         <ClientTabs
           clientId={client.id}
           notes={notes ?? []}
@@ -191,9 +191,9 @@ export default async function ClientPage({
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
-      <p className="text-xs uppercase text-chumbo-light">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-chumbo">{value}</p>
+    <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
+      <p className="text-xs uppercase text-zinc-400">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-white">{value}</p>
     </div>
   );
 }
@@ -201,8 +201,8 @@ function StatCard({ label, value }: { label: string; value: string }) {
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
-      <p className="text-xs uppercase text-zinc-500">{label}</p>
-      <p className="mt-0.5 text-chumbo">{value || "—"}</p>
+      <p className="text-xs uppercase text-zinc-400">{label}</p>
+      <p className="mt-0.5 text-white">{value || "—"}</p>
     </div>
   );
 }

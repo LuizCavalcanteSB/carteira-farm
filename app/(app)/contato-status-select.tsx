@@ -31,7 +31,7 @@ export function ContatoStatusSelect({
         });
       }}
       title="Registrar contato com este cliente"
-      className={`shrink-0 rounded-full border-0 px-2 py-0.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-chumbo/30 disabled:opacity-50 ${cor}`}
+      className={`shrink-0 rounded-full border-0 px-2 py-0.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand/40 disabled:opacity-50 ${cor}`}
     >
       <option value="">Sem contato</option>
       {CONTATO_STATUS_OPTIONS.map((o) => (

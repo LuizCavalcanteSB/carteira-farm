@@ -46,13 +46,13 @@ export function ConsultorEditor({
 
   return (
     <div className="min-w-0">
-      <p className="text-xs uppercase text-zinc-500">Consultor responsável</p>
+      <p className="text-xs uppercase text-zinc-400">Consultor responsável</p>
       <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-2">
         <select
           value={value}
           onChange={(e) => setValue(e.target.value)}
           disabled={isPending}
-          className="w-full min-w-0 truncate rounded-md border border-chumbo/20 px-2 py-1 text-sm focus:border-brand focus:outline-none disabled:opacity-50 sm:w-auto"
+          className="w-full min-w-0 truncate rounded-md border border-white/20 bg-chumbo-light px-2 py-1 text-sm text-white focus:border-brand focus:outline-none disabled:opacity-50 sm:w-auto"
         >
           {consultores.map((c) => (
             <option key={c.id} value={c.id}>
@@ -64,14 +64,14 @@ export function ConsultorEditor({
           <button
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md bg-chumbo px-3 py-1 text-xs font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+            className="rounded-md bg-brand px-3 py-1 text-xs font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
           >
             {isPending ? "Migrando..." : "Migrar"}
           </button>
         )}
-        {saved && <span className="text-xs text-green-700">Migrado!</span>}
+        {saved && <span className="text-xs text-green-400">Migrado!</span>}
       </div>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
     </div>
   );
 }

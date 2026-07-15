@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
-/* Paleta SeuBoné: fundo amarelo (marca) com detalhes em chumbo (grafite) */
+/* Paleta CACA 1.0: fundo chumbo (grafite escuro) com detalhes em dourado —
+   pensado pra quem fica a tela inteira olhando pro sistema o dia todo. */
 :root {
-  --background: #f5a800;
-  --foreground: #2b2b2e;
+  --background: #2b2b2e;
+  --foreground: #f2f2f0;
   --brand: #f5a800;
   --brand-dark: #c98600;
   --chumbo: #2b2b2e;

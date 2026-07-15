@@ -79,7 +79,7 @@ export function KanbanBoard({
   return (
     <div className="flex flex-col gap-3">
       {error && (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
           {error}
         </p>
       )}
@@ -110,23 +110,23 @@ export function KanbanBoard({
               }}
               className={`flex min-w-0 flex-col rounded-lg border transition-colors ${
                 isDraggedOver
-                  ? "border-brand bg-brand/5"
+                  ? "border-brand bg-brand/10"
                   : isDropTarget
-                    ? "border-dashed border-emerald-300 bg-emerald-50/40"
-                    : "border-chumbo/10 bg-zinc-50"
+                    ? "border-dashed border-emerald-500/40 bg-emerald-500/10"
+                    : "border-white/10 bg-white/5"
               }`}
             >
-              <div className="flex min-w-0 items-center gap-2 rounded-t-lg border-b border-chumbo/10 px-3 py-2">
+              <div className="flex min-w-0 items-center gap-2 rounded-t-lg border-b border-white/10 px-3 py-2">
                 {!isDropTarget && (
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${ESTAGIO_CONTATO_COLOR[coluna.id as EstagioContato]}`}
                   />
                 )}
-                <span className="min-w-0 truncate text-sm font-semibold text-chumbo">
+                <span className="min-w-0 truncate text-sm font-semibold text-white">
                   {coluna.label}
                 </span>
                 {!isDropTarget && (
-                  <span className="ml-auto shrink-0 rounded-full bg-white px-2 py-0.5 text-xs text-zinc-500">
+                  <span className="ml-auto shrink-0 rounded-full bg-chumbo px-2 py-0.5 text-xs text-zinc-300">
                     {cardsDaColuna.length}
                   </span>
                 )}
@@ -134,7 +134,7 @@ export function KanbanBoard({
 
               <div className="flex min-h-[120px] flex-col gap-2 p-2">
                 {isDropTarget && cardsDaColuna.length === 0 && (
-                  <p className="px-2 py-6 text-center text-xs text-emerald-700">
+                  <p className="px-2 py-6 text-center text-xs text-emerald-300">
                     Solte aqui para incluir na carteira
                   </p>
                 )}
@@ -147,25 +147,25 @@ export function KanbanBoard({
                       setDragId(card.id);
                     }}
                     onDragEnd={() => setDragId(null)}
-                    className={`cursor-grab rounded-md border border-chumbo/10 bg-white p-3 shadow-sm active:cursor-grabbing ${
+                    className={`cursor-grab rounded-md border border-white/10 bg-chumbo-light p-3 shadow-sm active:cursor-grabbing ${
                       dragId === card.id ? "opacity-40" : ""
                     }`}
                   >
                     <Link
                       href={`/clientes/${card.id}`}
-                      className="break-words font-medium text-zinc-900 hover:underline"
+                      className="break-words font-medium text-white hover:underline"
                     >
                       {card.nome}
                     </Link>
-                    <p className="mt-0.5 truncate text-xs text-zinc-500">
+                    <p className="mt-0.5 truncate text-xs text-zinc-400">
                       {card.cnpj ? formatCnpj(card.cnpj) : formatCpf(card.cpf ?? "")}
                     </p>
                     {isAdmin && (
-                      <p className="mt-1 truncate text-xs text-zinc-500">
+                      <p className="mt-1 truncate text-xs text-zinc-400">
                         {consultorNomeById[card.consultantId] ?? "—"}
                       </p>
                     )}
-                    <p className="mt-1 truncate text-xs text-zinc-400">
+                    <p className="mt-1 truncate text-xs text-zinc-500">
                       Adicionado em{" "}
                       {new Date(card.createdAt).toLocaleDateString("pt-BR")}
                     </p>
@@ -177,7 +177,7 @@ export function KanbanBoard({
                         onChange={(e) =>
                           moverCard(card.id, e.target.value as EstagioContato)
                         }
-                        className="w-full min-w-0 rounded-md border border-chumbo/20 px-1.5 py-1 text-xs focus:border-brand focus:outline-none disabled:opacity-50"
+                        className="w-full min-w-0 rounded-md border border-white/20 bg-chumbo-light px-1.5 py-1 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-50"
                       >
                         {ESTAGIOS_CONTATO.map((e) => (
                           <option key={e} value={e}>
@@ -188,7 +188,7 @@ export function KanbanBoard({
                       <button
                         onClick={() => moverCard(card.id, INCLUIR_NA_CARTEIRA)}
                         disabled={isPending}
-                        className="ml-auto shrink-0 rounded-md bg-chumbo px-2 py-1 text-xs font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+                        className="ml-auto shrink-0 rounded-md bg-brand px-2 py-1 text-xs font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
                       >
                         Incluir
                       </button>

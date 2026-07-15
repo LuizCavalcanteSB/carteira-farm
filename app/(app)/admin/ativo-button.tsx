@@ -33,13 +33,13 @@ export function AtivoButton({
         disabled={isPending}
         className={`rounded-md border px-3 py-1 text-xs font-medium disabled:opacity-50 ${
           ativo
-            ? "border-red-200 text-red-700 hover:bg-red-50"
-            : "border-chumbo/20 text-chumbo hover:bg-chumbo hover:text-brand"
+            ? "border-red-500/40 text-red-400 hover:bg-red-500/10"
+            : "border-white/20 text-zinc-300 hover:bg-brand hover:text-chumbo"
         }`}
       >
         {isPending ? "Salvando..." : ativo ? "Desativar conta" : "Reativar conta"}
       </button>
-      {error && <p className="max-w-[220px] text-right text-xs text-red-600">{error}</p>}
+      {error && <p className="max-w-[220px] text-right text-xs text-red-400">{error}</p>}
     </div>
   );
 }

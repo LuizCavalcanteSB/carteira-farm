@@ -147,15 +147,15 @@ export default async function PerfilPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col items-start gap-6 rounded-lg border border-chumbo/10 bg-white p-6 shadow-sm sm:flex-row">
+      <div className="flex flex-col items-start gap-6 rounded-lg border border-white/10 bg-chumbo-light p-6 shadow-sm sm:flex-row">
         <AvatarUpload
           profileId={profile.id}
           avatarUrl={avatarUrl}
           nome={profile.nome}
         />
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold text-chumbo">{profile.nome}</h1>
-          <p className="text-sm text-chumbo-light">
+          <h1 className="text-2xl font-semibold text-white">{profile.nome}</h1>
+          <p className="text-sm text-zinc-400">
             @{profile.username}
             {profile.role === "admin" && " · admin"}
           </p>
@@ -166,14 +166,14 @@ export default async function PerfilPage({
 
           <div className="mt-4">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-chumbo-light">
+              <span className="text-zinc-400">
                 Meta do mês: {formatCurrency(valorMeta)}
               </span>
-              <span className="font-medium text-chumbo">
+              <span className="font-medium text-white">
                 {formatCurrency(valorTotal)} vendido ({progresso.toFixed(0)}%)
               </span>
             </div>
-            <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-zinc-100">
+            <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full bg-brand"
                 style={{ width: `${progresso}%` }}
@@ -197,46 +197,46 @@ export default async function PerfilPage({
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase text-chumbo-light">Pedidos no mês</p>
-          <p className="mt-1 text-lg font-semibold text-chumbo">{totalPedidos}</p>
+        <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
+          <p className="text-xs uppercase text-zinc-400">Pedidos no mês</p>
+          <p className="mt-1 text-lg font-semibold text-white">{totalPedidos}</p>
         </div>
-        <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase text-chumbo-light">Valor total</p>
-          <p className="mt-1 text-lg font-semibold text-chumbo">
+        <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
+          <p className="text-xs uppercase text-zinc-400">Valor total</p>
+          <p className="mt-1 text-lg font-semibold text-white">
             {formatCurrency(valorTotal)}
           </p>
         </div>
-        <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
-          <p className="text-xs uppercase text-chumbo-light">Ticket médio</p>
-          <p className="mt-1 text-lg font-semibold text-chumbo">
+        <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
+          <p className="text-xs uppercase text-zinc-400">Ticket médio</p>
+          <p className="mt-1 text-lg font-semibold text-white">
             {formatCurrency(ticketMedio)}
           </p>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-white/10 bg-chumbo-light shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
+          <thead className="bg-white/5 text-left text-xs uppercase text-zinc-400">
             <tr>
               <th className="px-4 py-3">Cliente</th>
               <th className="px-4 py-3">Pedidos</th>
               <th className="px-4 py-3">Valor</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-white/10">
             {porCliente.map((c, i) => (
               <tr key={i}>
-                <td className="px-4 py-3 font-medium text-zinc-900">{c.nome}</td>
-                <td className="px-4 py-3 text-zinc-600">{c.pedidos}</td>
-                <td className="px-4 py-3 text-zinc-600">
+                <td className="px-4 py-3 font-medium text-white">{c.nome}</td>
+                <td className="px-4 py-3 text-zinc-300">{c.pedidos}</td>
+                <td className="px-4 py-3 text-zinc-300">
                   {formatCurrency(c.valor)}
                 </td>
               </tr>
             ))}
             {porCliente.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-zinc-400">
+                <td colSpan={3} className="px-4 py-8 text-center text-zinc-500">
                   Nenhum pedido neste mês.
                 </td>
               </tr>

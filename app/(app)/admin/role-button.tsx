@@ -33,7 +33,7 @@ export function RoleButton({
       <button
         onClick={handleClick}
         disabled={isPending}
-        className="rounded-md border border-chumbo/20 px-3 py-1 text-xs font-medium text-chumbo hover:bg-chumbo hover:text-brand disabled:opacity-50"
+        className="rounded-md border border-white/20 px-3 py-1 text-xs font-medium text-zinc-300 hover:bg-brand hover:text-chumbo disabled:opacity-50"
       >
         {isPending
           ? "Salvando..."
@@ -41,7 +41,7 @@ export function RoleButton({
             ? "Promover a admin"
             : "Rebaixar a consultor"}
       </button>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
   );
 }

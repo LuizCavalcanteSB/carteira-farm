@@ -63,8 +63,8 @@ export default async function NotificacoesPage({
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-chumbo">Notificações</h1>
-          <p className="text-sm text-chumbo-light">
+          <h1 className="text-2xl font-semibold text-white">Notificações</h1>
+          <p className="text-sm text-zinc-400">
             Pedidos com entrega prevista em até 3 dias, ou já atrasados.
           </p>
         </div>
@@ -78,12 +78,12 @@ export default async function NotificacoesPage({
           <Link
             key={n.id}
             href={`/clientes/${n.id}`}
-            className="flex items-center justify-between rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm hover:bg-zinc-50"
+            className="flex items-center justify-between rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm hover:bg-white/5"
           >
             <div>
-              <p className="font-medium text-zinc-900">{n.nome}</p>
+              <p className="font-medium text-white">{n.nome}</p>
               {isAdmin && (
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-zinc-400">
                   {consultorNomeById.get(n.consultant_id) ?? "—"}
                 </p>
               )}
@@ -91,10 +91,10 @@ export default async function NotificacoesPage({
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                 n.dias < 0
-                  ? "bg-red-100 text-red-800"
+                  ? "bg-red-500/15 text-red-400"
                   : n.dias <= 3
-                    ? "bg-amber-100 text-amber-800"
-                    : "bg-zinc-100 text-zinc-600"
+                    ? "bg-amber-500/15 text-amber-400"
+                    : "bg-white/10 text-zinc-300"
               }`}
             >
               {n.dias < 0
@@ -106,7 +106,7 @@ export default async function NotificacoesPage({
           </Link>
         ))}
         {notificacoes.length === 0 && (
-          <p className="rounded-lg border border-chumbo/10 bg-white p-8 text-center text-zinc-400 shadow-sm">
+          <p className="rounded-lg border border-white/10 bg-chumbo-light p-8 text-center text-zinc-500 shadow-sm">
             Nenhuma notificação no momento.
           </p>
         )}

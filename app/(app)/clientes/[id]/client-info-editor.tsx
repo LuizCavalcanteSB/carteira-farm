@@ -73,20 +73,20 @@ export function ClientInfoEditor({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold text-chumbo">Informações do cliente</p>
+        <p className="text-sm font-semibold text-white">Informações do cliente</p>
         {editing ? (
           <div className="flex gap-2">
             <button
               onClick={cancelar}
               disabled={isPending}
-              className="rounded-md border border-chumbo/20 px-3 py-1.5 text-xs font-medium text-chumbo hover:bg-zinc-50 disabled:opacity-50"
+              className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/10 disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               onClick={salvar}
               disabled={isPending}
-              className="rounded-md bg-chumbo px-3 py-1.5 text-xs font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+              className="rounded-md bg-brand px-3 py-1.5 text-xs font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
             >
               {isPending ? "Salvando..." : "Salvar"}
             </button>
@@ -94,14 +94,14 @@ export function ClientInfoEditor({
         ) : (
           <button
             onClick={() => setEditing(true)}
-            className="rounded-md border border-chumbo/20 px-3 py-1.5 text-xs font-medium text-chumbo hover:bg-zinc-50"
+            className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/10"
           >
             Editar
           </button>
         )}
       </div>
 
-      {error && <p className="mb-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
 
       {!editing && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -197,8 +197,8 @@ export function ClientInfoEditor({
 function ReadOnlyField({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
-      <p className="text-xs uppercase text-zinc-500">{label}</p>
-      <p className="mt-0.5 text-chumbo">{value || "—"}</p>
+      <p className="text-xs uppercase text-zinc-400">{label}</p>
+      <p className="mt-0.5 text-white">{value || "—"}</p>
     </div>
   );
 }
@@ -216,12 +216,12 @@ function InputField({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs uppercase text-zinc-500">{label}</label>
+      <label className="text-xs uppercase text-zinc-400">{label}</label>
       <input
         type={type}
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-chumbo/20 px-2 py-1.5 text-sm text-chumbo focus:border-brand focus:outline-none"
+        className="rounded-md border border-white/20 bg-chumbo-light px-2 py-1.5 text-sm text-white focus:border-brand focus:outline-none"
       />
     </div>
   );
@@ -240,11 +240,11 @@ function SelectField({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs uppercase text-zinc-500">{label}</label>
+      <label className="text-xs uppercase text-zinc-400">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-chumbo/20 px-2 py-1.5 text-sm text-chumbo focus:border-brand focus:outline-none"
+        className="rounded-md border border-white/20 bg-chumbo-light px-2 py-1.5 text-sm text-white focus:border-brand focus:outline-none"
       >
         <option value="">Não informado</option>
         {options.map((o) => (

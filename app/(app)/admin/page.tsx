@@ -25,20 +25,20 @@ export default async function AdminPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-semibold text-chumbo">Consultores</h1>
-      <p className="mt-1 text-sm text-chumbo-light">
+      <h1 className="text-2xl font-semibold text-white">Consultores</h1>
+      <p className="mt-1 text-sm text-zinc-400">
         Promova ou rebaixe quem tem acesso de administrador no sistema.
       </p>
 
       {consultoresError && (
-        <p className="mt-3 text-sm text-red-600">
+        <p className="mt-3 text-sm text-red-400">
           Não foi possível carregar a lista: {consultoresError.message}
         </p>
       )}
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm">
+      <div className="mt-6 overflow-hidden rounded-lg border border-white/10 bg-chumbo-light shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
+          <thead className="bg-white/5 text-left text-xs uppercase text-zinc-400">
             <tr>
               <th className="px-4 py-3">Nome</th>
               <th className="px-4 py-3">Usuário</th>
@@ -48,21 +48,21 @@ export default async function AdminPage() {
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-white/10">
             {(consultores ?? []).map((c) => (
-              <tr key={c.id} className="hover:bg-zinc-50">
-                <td className="px-4 py-3 font-medium text-zinc-900">
+              <tr key={c.id} className="hover:bg-white/5">
+                <td className="px-4 py-3 font-medium text-white">
                   <Link href={`/perfil/${c.id}`} className="hover:underline">
                     {c.nome}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-zinc-600">{c.username}</td>
+                <td className="px-4 py-3 text-zinc-300">{c.username}</td>
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       c.role === "admin"
-                        ? "bg-chumbo text-brand"
-                        : "bg-zinc-100 text-zinc-600"
+                        ? "bg-brand text-chumbo"
+                        : "bg-white/10 text-zinc-300"
                     }`}
                   >
                     {c.role === "admin" ? "Admin" : "Consultor"}
@@ -72,14 +72,14 @@ export default async function AdminPage() {
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       c.ativo
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-green-500/15 text-green-400"
+                        : "bg-red-500/15 text-red-400"
                     }`}
                   >
                     {c.ativo ? "Ativo" : "Desativado"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-zinc-600">
+                <td className="px-4 py-3 text-zinc-300">
                   {new Date(c.created_at).toLocaleDateString("pt-BR")}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -96,7 +96,7 @@ export default async function AdminPage() {
             ))}
             {(consultores ?? []).length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-zinc-400">
+                <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
                   Nenhum consultor cadastrado ainda.
                 </td>
               </tr>

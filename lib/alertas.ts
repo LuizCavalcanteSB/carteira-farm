@@ -71,12 +71,12 @@ export function calcularProximoAniversario(dataFundacaoISO: string): Aniversario
 }
 
 export const ANIVERSARIO_TIER_COLOR: Record<string, string> = {
-  "30": "bg-red-100 text-red-800",
-  "45": "bg-orange-100 text-orange-800",
-  "60": "bg-amber-100 text-amber-800",
+  "30": "bg-red-500/15 text-red-400",
+  "45": "bg-orange-500/15 text-orange-400",
+  "60": "bg-amber-500/15 text-amber-400",
 };
 
-export const ANIVERSARIO_SEM_ALERTA_COLOR = "bg-zinc-100 text-zinc-600";
+export const ANIVERSARIO_SEM_ALERTA_COLOR = "bg-white/10 text-zinc-300";
 
 export const MESES_LABEL = [
   "Janeiro",

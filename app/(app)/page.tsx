@@ -15,9 +15,9 @@ const STATUS_LABEL: Record<ClientStatus, string> = {
 };
 
 const STATUS_COLOR: Record<ClientStatus, string> = {
-  ativo: "bg-green-100 text-green-800",
-  inativo: "bg-zinc-100 text-zinc-600",
-  prospeccao: "bg-amber-100 text-amber-800",
+  ativo: "bg-green-500/15 text-green-400",
+  inativo: "bg-white/10 text-zinc-300",
+  prospeccao: "bg-amber-500/15 text-amber-400",
 };
 
 function formatCurrency(value: number) {
@@ -177,10 +177,10 @@ export default async function DashboardPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-chumbo">
+        <h1 className="text-2xl font-semibold text-white">
           {isAdmin ? "Todas as carteiras" : "Minha carteira"}
         </h1>
-        <p className="text-sm text-chumbo-light">
+        <p className="text-sm text-zinc-400">
           Busque um cliente pelo nome, CNPJ ou CPF.
         </p>
       </div>
@@ -193,7 +193,7 @@ export default async function DashboardPage({
       />
 
       {statsErro && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
           Não foi possível carregar pedidos/total comprado/observações agora
           — os números abaixo podem estar incompletos. Atualize a página em
           instantes.
@@ -207,9 +207,9 @@ export default async function DashboardPage({
         <ResumoCard label="Incompletos" value={String(totais.incompletos)} />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-white/10 bg-chumbo-light shadow-sm">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500">
+          <thead className="bg-white/5 text-left text-xs uppercase text-zinc-400">
             <tr>
               <th className="px-4 py-3">Cliente</th>
               <th className="px-4 py-3">CNPJ/CPF</th>
@@ -220,22 +220,22 @@ export default async function DashboardPage({
               <th className="px-4 py-3">Último pedido</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-white/10">
             {linhas.map(({ client, pedidos, totalComprado, ultimoPedido, incompleto }) => {
               return (
-                <tr key={client.id} className="hover:bg-zinc-50">
+                <tr key={client.id} className="hover:bg-white/5">
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/clientes/${client.id}`}
-                        className="font-medium text-zinc-900 hover:underline"
+                        className="font-medium text-white hover:underline"
                       >
                         {client.nome}
                       </Link>
                       {incompleto && (
                         <span
                           title="Faltam informações no perfil (pedidos, observações ou fotos)"
-                          className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                          className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-400"
                         >
                           ⚠ incompleto
                         </span>
@@ -246,7 +246,7 @@ export default async function DashboardPage({
                       />
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600">
+                  <td className="px-4 py-3 text-zinc-300">
                     {client.cnpj ? formatCnpj(client.cnpj) : formatCpf(client.cpf)}
                   </td>
                   <td className="px-4 py-3">
@@ -257,15 +257,15 @@ export default async function DashboardPage({
                     </span>
                   </td>
                   {isAdmin && (
-                    <td className="px-4 py-3 text-zinc-600">
+                    <td className="px-4 py-3 text-zinc-300">
                       {consultorNomeById.get(client.consultant_id) ?? "—"}
                     </td>
                   )}
-                  <td className="px-4 py-3 text-zinc-600">{pedidos}</td>
-                  <td className="px-4 py-3 text-zinc-600">
+                  <td className="px-4 py-3 text-zinc-300">{pedidos}</td>
+                  <td className="px-4 py-3 text-zinc-300">
                     {formatCurrency(totalComprado)}
                   </td>
-                  <td className="px-4 py-3 text-zinc-600">
+                  <td className="px-4 py-3 text-zinc-300">
                     {ultimoPedido ? formatDateOnly(ultimoPedido) : "—"}
                   </td>
                 </tr>
@@ -275,7 +275,7 @@ export default async function DashboardPage({
               <tr>
                 <td
                   colSpan={isAdmin ? 7 : 6}
-                  className="px-4 py-8 text-center text-zinc-400"
+                  className="px-4 py-8 text-center text-zinc-500"
                 >
                   Nenhum cliente encontrado.
                 </td>
@@ -290,9 +290,9 @@ export default async function DashboardPage({
 
 function ResumoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm">
-      <p className="text-xs uppercase text-chumbo-light">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-chumbo">{value}</p>
+    <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
+      <p className="text-xs uppercase text-zinc-400">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-white">{value}</p>
     </div>
   );
 }

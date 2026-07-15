@@ -9,7 +9,7 @@ export function SignUpForm() {
   return (
     <form action={formAction} className="mt-6 flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <label htmlFor="nome" className="text-sm font-medium text-chumbo">
+        <label htmlFor="nome" className="text-sm font-medium text-white">
           Nome completo
         </label>
         <input
@@ -18,12 +18,12 @@ export function SignUpForm() {
           type="text"
           required
           autoComplete="name"
-          className="rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="rounded-md border border-white/20 bg-chumbo px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="username" className="text-sm font-medium text-chumbo">
+        <label htmlFor="username" className="text-sm font-medium text-white">
           Usuário
         </label>
         <input
@@ -35,7 +35,7 @@ export function SignUpForm() {
           maxLength={32}
           autoComplete="username"
           placeholder="ex: joao.silva"
-          className="rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="rounded-md border border-white/20 bg-chumbo px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
         />
         <p className="text-xs text-zinc-400">
           Letras, números, ponto, traço ou underline. Sem espaços.
@@ -43,7 +43,7 @@ export function SignUpForm() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-sm font-medium text-chumbo">
+        <label htmlFor="password" className="text-sm font-medium text-white">
           Senha
         </label>
         <input
@@ -53,14 +53,14 @@ export function SignUpForm() {
           required
           minLength={6}
           autoComplete="new-password"
-          className="rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="rounded-md border border-white/20 bg-chumbo px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
         />
       </div>
 
       <div className="flex flex-col gap-1">
         <label
           htmlFor="confirmPassword"
-          className="text-sm font-medium text-chumbo"
+          className="text-sm font-medium text-white"
         >
           Confirmar senha
         </label>
@@ -71,16 +71,16 @@ export function SignUpForm() {
           required
           minLength={6}
           autoComplete="new-password"
-          className="rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="rounded-md border border-white/20 bg-chumbo px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
         />
       </div>
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state?.error && <p className="text-sm text-red-400">{state.error}</p>}
 
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-md bg-chumbo px-4 py-2 text-sm font-medium text-brand transition-colors hover:bg-chumbo-light disabled:opacity-50"
+        className="mt-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo transition-colors hover:bg-brand-dark disabled:opacity-50"
       >
         {pending ? "Criando conta..." : "Criar conta"}
       </button>

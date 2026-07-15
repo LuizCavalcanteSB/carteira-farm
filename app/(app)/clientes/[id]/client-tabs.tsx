@@ -51,15 +51,15 @@ export function ClientTabs({
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-zinc-200">
+      <div className="flex gap-1 border-b border-white/10">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium ${
               tab === t
-                ? "border-b-2 border-brand text-chumbo"
-                : "text-zinc-500 hover:text-chumbo"
+                ? "border-b-2 border-brand text-white"
+                : "text-zinc-400 hover:bg-white/5 hover:text-white"
             }`}
           >
             {TAB_LABEL[t]}
@@ -107,12 +107,12 @@ function NotesTab({
           required
           rows={3}
           placeholder="Adicionar observação sobre este cliente..."
-          className="rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+          className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="self-start rounded-md bg-chumbo px-4 py-2 text-sm font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+          className="self-start rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
         >
           {isPending ? "Salvando..." : "Adicionar observação"}
         </button>
@@ -129,19 +129,19 @@ function NotesTab({
               onSaved={() => setEditingId(null)}
             />
           ) : (
-            <li key={note.id} className="rounded-md border border-zinc-200 p-3">
-              <p className="whitespace-pre-wrap text-sm text-zinc-800">
+            <li key={note.id} className="rounded-md border border-white/10 bg-white/5 p-3">
+              <p className="whitespace-pre-wrap text-sm text-zinc-200">
                 {note.conteudo}
               </p>
               <div className="mt-1 flex items-center justify-between">
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-zinc-500">
                   {note.author?.nome ?? "—"} ·{" "}
                   {new Date(note.created_at).toLocaleString("pt-BR")}
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setEditingId(note.id)}
-                    className="text-xs text-chumbo hover:underline"
+                    className="text-xs text-white hover:underline"
                   >
                     Editar
                   </button>
@@ -156,7 +156,7 @@ function NotesTab({
                       }
                     }}
                     disabled={isPending}
-                    className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                    className="text-xs text-red-400 hover:underline disabled:opacity-50"
                   >
                     Remover
                   </button>
@@ -166,7 +166,7 @@ function NotesTab({
           ),
         )}
         {notes.length === 0 && (
-          <p className="text-sm text-zinc-400">Nenhuma observação ainda.</p>
+          <p className="text-sm text-zinc-500">Nenhuma observação ainda.</p>
         )}
       </ul>
     </div>
@@ -198,27 +198,27 @@ function NotaEditor({
   }
 
   return (
-    <li className="rounded-md border border-chumbo/30 p-3">
+    <li className="rounded-md border border-white/30 p-3">
       <textarea
         value={conteudo}
         onChange={(e) => setConteudo(e.target.value)}
         rows={3}
         autoFocus
-        className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+        className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
       />
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
       <div className="mt-2 flex gap-2">
         <button
           onClick={salvar}
           disabled={isPending}
-          className="rounded-md bg-chumbo px-3 py-1.5 text-xs font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+          className="rounded-md bg-brand px-3 py-1.5 text-xs font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
         >
           {isPending ? "Salvando..." : "Salvar"}
         </button>
         <button
           onClick={onCancel}
           disabled={isPending}
-          className="rounded-md border border-chumbo/20 px-3 py-1.5 text-xs font-medium text-chumbo hover:bg-zinc-50 disabled:opacity-50"
+          className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/5 disabled:opacity-50"
         >
           Cancelar
         </button>
@@ -255,46 +255,46 @@ function OrdersTab({
         className="flex flex-wrap items-end gap-3"
       >
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-zinc-500">Data do pedido</label>
+          <label className="text-xs text-zinc-400">Data do pedido</label>
           <input
             type="date"
             name="data_pedido"
             required
-            className="rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+            className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-zinc-500">Valor (R$)</label>
+          <label className="text-xs text-zinc-400">Valor (R$)</label>
           <input
             type="number"
             name="valor"
             step="0.01"
             min="0"
             required
-            className="w-32 rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+            className="w-32 rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
           />
         </div>
         <div className="flex flex-1 flex-col gap-1">
-          <label className="text-xs text-zinc-500">Descrição</label>
+          <label className="text-xs text-zinc-400">Descrição</label>
           <input
             type="text"
             name="descricao"
             placeholder="Ex: 200 bonés trucker personalizados"
-            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-chumbo px-4 py-2 text-sm font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+          className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
         >
           {isPending ? "Salvando..." : "Adicionar pedido"}
         </button>
       </form>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       <table className="w-full text-sm">
-        <thead className="text-left text-xs uppercase text-zinc-500">
+        <thead className="text-left text-xs uppercase text-zinc-400">
           <tr>
             <th className="py-2">Data</th>
             <th className="py-2">Valor</th>
@@ -302,7 +302,7 @@ function OrdersTab({
             <th className="py-2"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100">
+        <tbody className="divide-y divide-white/10">
           {orders.map((order) => {
             const contabilizado = contaNasEstatisticas(order.data_pedido);
             return (
@@ -312,21 +312,21 @@ function OrdersTab({
                   {!contabilizado && (
                     <span
                       title="Pedido anterior ao início do controle de pedidos no sistema — já está somado no histórico do cliente e não entra nas estatísticas (Pedidos, Total comprado, Ticket médio) para evitar duplicar."
-                      className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500"
+                      className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs text-zinc-400"
                     >
                       não contabilizado
                     </span>
                   )}
                 </td>
                 <td className="py-2">{formatCurrency(order.valor)}</td>
-                <td className="py-2 text-zinc-600">{order.descricao || "—"}</td>
+                <td className="py-2 text-zinc-300">{order.descricao || "—"}</td>
                 <td className="py-2 text-right">
                   <button
                     onClick={() =>
                       startTransition(() => deleteOrder(clientId, order.id))
                     }
                     disabled={isPending}
-                    className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                    className="text-xs text-red-400 hover:underline disabled:opacity-50"
                   >
                     Remover
                   </button>
@@ -336,7 +336,7 @@ function OrdersTab({
           })}
           {orders.length === 0 && (
             <tr>
-              <td colSpan={4} className="py-6 text-center text-zinc-400">
+              <td colSpan={4} className="py-6 text-center text-zinc-500">
                 Nenhum pedido registrado.
               </td>
             </tr>
@@ -397,16 +397,16 @@ function PhotosTab({
           className="text-sm"
         />
         {isUploading && (
-          <p className="mt-1 text-xs text-zinc-500">Enviando foto(s)...</p>
+          <p className="mt-1 text-xs text-zinc-400">Enviando foto(s)...</p>
         )}
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {photos.map((photo) => (
           <div
             key={photo.id}
-            className="group relative overflow-hidden rounded-lg border border-zinc-200"
+            className="group relative overflow-hidden rounded-lg border border-white/10"
           >
             {photo.url && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -430,7 +430,7 @@ function PhotosTab({
           </div>
         ))}
         {photos.length === 0 && (
-          <p className="col-span-full text-sm text-zinc-400">
+          <p className="col-span-full text-sm text-zinc-500">
             Nenhuma foto enviada ainda.
           </p>
         )}
@@ -467,45 +467,45 @@ function LinksTab({
         className="flex flex-wrap items-end gap-3"
       >
         <div className="flex flex-1 flex-col gap-1">
-          <label className="text-xs text-zinc-500">URL do Bitrix</label>
+          <label className="text-xs text-zinc-400">URL do Bitrix</label>
           <input
             type="url"
             name="url"
             required
             placeholder="https://seubone.bitrix24.com.br/..."
-            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
           />
         </div>
         <div className="flex flex-1 flex-col gap-1">
-          <label className="text-xs text-zinc-500">Descrição</label>
+          <label className="text-xs text-zinc-400">Descrição</label>
           <input
             type="text"
             name="descricao"
             placeholder="Ex: Negociação boné trucker maio/26"
-            className="w-full rounded-md border border-chumbo/20 px-3 py-2 text-sm focus:border-chumbo focus:outline-none"
+            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-chumbo px-4 py-2 text-sm font-medium text-brand hover:bg-chumbo-light disabled:opacity-50"
+          className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
         >
           {isPending ? "Salvando..." : "Adicionar link"}
         </button>
       </form>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       <ul className="flex flex-col gap-2">
         {links.map((link) => (
           <li
             key={link.id}
-            className="flex items-center justify-between gap-3 rounded-md border border-zinc-200 p-3"
+            className="flex items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 p-3"
           >
             <a
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="min-w-0 flex-1 truncate text-sm text-blue-700 hover:underline"
+              className="min-w-0 flex-1 truncate text-sm text-blue-400 hover:underline"
               title={link.url}
             >
               {link.descricao || link.url}
@@ -513,14 +513,14 @@ function LinksTab({
             <button
               onClick={() => startTransition(() => deleteLink(clientId, link.id))}
               disabled={isPending}
-              className="shrink-0 text-xs text-red-600 hover:underline disabled:opacity-50"
+              className="shrink-0 text-xs text-red-400 hover:underline disabled:opacity-50"
             >
               Remover
             </button>
           </li>
         ))}
         {links.length === 0 && (
-          <p className="text-sm text-zinc-400">Nenhum link cadastrado ainda.</p>
+          <p className="text-sm text-zinc-500">Nenhum link cadastrado ainda.</p>
         )}
       </ul>
     </div>
