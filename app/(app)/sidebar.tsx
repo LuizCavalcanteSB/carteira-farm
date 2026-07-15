@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { SignOutButton } from "./sign-out-button";
+import { OwlLogo } from "./owl-logo";
 
 type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
 
@@ -61,13 +62,17 @@ function SidebarContent({
     <div className="flex h-full flex-col">
       <Link
         href="/"
-        className="flex shrink-0 items-center px-4 pt-5 pb-3"
+        className="flex shrink-0 items-center gap-2 px-4 pt-5 pb-1"
         onClick={onNavigate}
       >
+        <OwlLogo className="h-9 w-9 shrink-0" />
         <span className="text-lg font-semibold tracking-tight text-white">
           CACA <span className="text-brand">1.0</span>
         </span>
       </Link>
+      <p className="px-4 pb-3 text-[10px] font-semibold tracking-[0.2em] text-brand/70 uppercase">
+        Squad Nexus
+      </p>
 
       <Link
         href="/perfil"
@@ -148,9 +153,12 @@ export function Sidebar({
     <>
       {/* Mobile top bar */}
       <div className="flex items-center justify-between bg-chumbo px-4 py-3 md:hidden">
-        <span className="text-base font-semibold tracking-tight text-white">
-          CACA <span className="text-brand">1.0</span>
-        </span>
+        <div className="flex items-center gap-2">
+          <OwlLogo className="h-7 w-7 shrink-0" />
+          <span className="text-base font-semibold tracking-tight text-white">
+            CACA <span className="text-brand">1.0</span>
+          </span>
+        </div>
         <button
           onClick={() => setIsOpen(true)}
           aria-label="Abrir menu"
