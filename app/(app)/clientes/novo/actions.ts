@@ -81,6 +81,9 @@ export async function createClientRecord(
       aniversario_empresa:
         String(formData.get("aniversario_empresa") ?? "") || null,
       origem: "manual",
+      // fica de fora do dashboard/alertas/metas do consultor até alguém
+      // confirmar o primeiro contato em /novos-contatos.
+      na_carteira: false,
       consultant_id: consultantId,
       ...(valorPedidoEntrada > 0 && dataPedidoEntrada
         ? {

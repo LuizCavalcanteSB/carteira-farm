@@ -38,7 +38,11 @@ export default async function MimosPage({
     ? (await supabase.from("profiles").select("id, nome").order("nome")).data ?? []
     : [];
 
-  let clientesQuery = supabase.from("clients").select("id, nome").order("nome");
+  let clientesQuery = supabase
+    .from("clients")
+    .select("id, nome")
+    .eq("na_carteira", true)
+    .order("nome");
   if (isAdmin && consultor) {
     clientesQuery = clientesQuery.eq("consultant_id", consultor);
   }

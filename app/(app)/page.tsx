@@ -24,13 +24,7 @@ function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-const ORDENAR_OPCOES = [
-  "nome",
-  "pedidos",
-  "valor",
-  "ultimo_pedido",
-  "recentes",
-] as const;
+const ORDENAR_OPCOES = ["nome", "pedidos", "valor", "ultimo_pedido"] as const;
 type Ordenar = (typeof ORDENAR_OPCOES)[number];
 
 export default async function DashboardPage({
@@ -68,8 +62,11 @@ export default async function DashboardPage({
   let query = supabase
     .from("clients")
     .select(
-      "id, nome, cnpj, cpf, status, segmento, consultant_id, contato_status, created_at, origem",
+      "id, nome, cnpj, cpf, status, segmento, consultant_id, contato_status",
     )
+    // ainda não entrou de fato na carteira (lead novo aguardando o
+    // primeiro contato) — ver /novos-contatos.
+    .eq("na_carteira", true)
     .order("nome");
 
   if (q) {
@@ -139,10 +136,7 @@ export default async function DashboardPage({
     (consultores ?? []).map((c) => [c.id, c.nome]),
   );
 
-  // "Adicionados recentemente" só deve mostrar quem foi cadastrado à mão em
-  // Novo cliente — a importação de planilha não conta aqui, mesmo que tenha
-  // criado o registro há pouco tempo (ver coluna clients.origem).
-  const todasLinhas = (clients ?? []).map((client) => {
+  const linhas = (clients ?? []).map((client) => {
     const stat = statsByClient.get(client.id);
     return {
       client,
@@ -155,11 +149,6 @@ export default async function DashboardPage({
         (photosCountByClient.get(client.id) ?? 0) === 0,
     };
   });
-
-  const linhas =
-    ordenar === "recentes"
-      ? todasLinhas.filter((l) => l.client.origem === "manual")
-      : todasLinhas;
 
   const totais = linhas.reduce(
     (acc, l) => ({
@@ -180,12 +169,6 @@ export default async function DashboardPage({
       if (!b.ultimoPedido) return -1;
       return (
         new Date(b.ultimoPedido).getTime() - new Date(a.ultimoPedido).getTime()
-      );
-    }
-    if (ordenar === "recentes") {
-      return (
-        new Date(b.client.created_at).getTime() -
-        new Date(a.client.created_at).getTime()
       );
     }
     return a.client.nome.localeCompare(b.client.nome);
@@ -235,9 +218,6 @@ export default async function DashboardPage({
               <th className="px-4 py-3">Pedidos</th>
               <th className="px-4 py-3">Total comprado</th>
               <th className="px-4 py-3">Último pedido</th>
-              {ordenar === "recentes" && (
-                <th className="px-4 py-3">Adicionado em</th>
-              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -288,20 +268,13 @@ export default async function DashboardPage({
                   <td className="px-4 py-3 text-zinc-600">
                     {ultimoPedido ? formatDateOnly(ultimoPedido) : "—"}
                   </td>
-                  {ordenar === "recentes" && (
-                    <td className="px-4 py-3 text-zinc-600">
-                      {new Date(client.created_at).toLocaleDateString("pt-BR")}
-                    </td>
-                  )}
                 </tr>
               );
             })}
             {linhas.length === 0 && (
               <tr>
                 <td
-                  colSpan={
-                    (isAdmin ? 7 : 6) + (ordenar === "recentes" ? 1 : 0)
-                  }
+                  colSpan={isAdmin ? 7 : 6}
                   className="px-4 py-8 text-center text-zinc-400"
                 >
                   Nenhum cliente encontrado.

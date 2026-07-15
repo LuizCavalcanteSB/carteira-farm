@@ -50,6 +50,7 @@ export default async function AlertasPage({
   let clientQuery = supabase
     .from("clients")
     .select("id, nome, cnpj, cpf, status, consultant_id, aniversario_empresa")
+    .eq("na_carteira", true)
     .order("nome");
 
   if (isAdmin && consultor) {

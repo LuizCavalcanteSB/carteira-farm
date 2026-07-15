@@ -155,3 +155,40 @@ export async function setAniversario(clientId: string, data: string) {
   revalidatePath(`/clientes/${clientId}`);
   return { error: null };
 }
+
+// Reatribuir a carteira de um cliente para outro consultor — só admin. A
+// policy de update de `clients` permite o dono atual gravar em qualquer
+// coluna da própria linha (não restringe consultant_id), então a checagem
+// de papel aqui é a única barreira contra um consultor se autodelegar
+// clientes de outra pessoa.
+export async function reassignConsultant(
+  clientId: string,
+  newConsultantId: string,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sessão expirada, faça login novamente." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin") {
+    return { error: "Só administradores podem reatribuir clientes." };
+  }
+
+  const { error } = await supabase
+    .from("clients")
+    .update({ consultant_id: newConsultantId })
+    .eq("id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  revalidatePath("/");
+  return { error: null };
+}

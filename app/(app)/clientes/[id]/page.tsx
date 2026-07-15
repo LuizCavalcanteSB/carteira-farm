@@ -6,6 +6,7 @@ import { formatDateOnly } from "@/lib/date";
 import { ClientTabs } from "./client-tabs";
 import { BirthdayEditor } from "./birthday-editor";
 import { ClientInfoEditor } from "./client-info-editor";
+import { ConsultorEditor } from "./consultor-editor";
 import type { ClientStatus, PerfilComprador, Porte } from "@/lib/types";
 
 const STATUS_LABEL: Record<ClientStatus, string> = {
@@ -26,6 +27,10 @@ export default async function ClientPage({
   const { id } = await params;
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data: client } = await supabase
     .from("clients")
     .select("*")
@@ -35,6 +40,7 @@ export default async function ClientPage({
   if (!client) notFound();
 
   const [
+    { data: viewerProfile },
     { data: stats },
     { data: notes },
     { data: orders },
@@ -42,6 +48,7 @@ export default async function ClientPage({
     { data: links },
     { data: consultor },
   ] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", user!.id).single(),
     supabase.from("client_stats").select("*").eq("client_id", id).single(),
     supabase
       .from("client_notes")
@@ -65,6 +72,12 @@ export default async function ClientPage({
       .order("created_at", { ascending: false }),
     supabase.from("profiles").select("nome").eq("id", client.consultant_id).single(),
   ]);
+
+  const isAdmin = viewerProfile?.role === "admin";
+
+  const consultores = isAdmin
+    ? (await supabase.from("profiles").select("id, nome").order("nome")).data ?? []
+    : [];
 
   const photosWithUrls = await Promise.all(
     (photos ?? []).map(async (photo) => {
@@ -142,7 +155,15 @@ export default async function ClientPage({
                 : null
             }
           />
-          <Field label="Consultor responsável" value={consultor?.nome} />
+          {isAdmin ? (
+            <ConsultorEditor
+              clientId={client.id}
+              consultantId={client.consultant_id}
+              consultores={consultores}
+            />
+          ) : (
+            <Field label="Consultor responsável" value={consultor?.nome} />
+          )}
           <BirthdayEditor
             clientId={client.id}
             aniversarioEmpresa={client.aniversario_empresa}

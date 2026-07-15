@@ -83,6 +83,14 @@ create table public.clients (
   -- campo no upsert, então cai no default em linhas novas e não mexe em
   -- linhas existentes); "Novo cliente" seta 'manual' explicitamente.
   origem text not null default 'planilha' check (origem in ('manual', 'planilha')),
+  -- fila de "novos contatos": cliente cadastrado manualmente só entra de
+  -- fato na carteira do consultor (aparece no dashboard/alertas/metas)
+  -- depois que alguém confirma o primeiro contato em /novos-contatos. Campo
+  -- separado do contato_status de propósito — se o contato_status for
+  -- resetado pra "Sem contato" depois, o cliente não deve sumir da carteira
+  -- de novo. Default true porque importação de planilha nunca passa por
+  -- essa fila (é carteira que já existe, não lead novo).
+  na_carteira boolean not null default true,
   consultant_id uuid not null references public.profiles (id),
   created_at timestamptz not null default now(),
   -- auditoria: quem mexeu por último e quando (importação, edição manual,

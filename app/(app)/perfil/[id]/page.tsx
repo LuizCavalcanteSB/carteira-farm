@@ -65,6 +65,7 @@ export default async function PerfilPage({
         .from("clients")
         .select("id, nome")
         .eq("consultant_id", id)
+        .eq("na_carteira", true)
         .range(from, to),
     ),
   ]);

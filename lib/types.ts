@@ -59,6 +59,7 @@ export type Client = {
   aniversario_empresa: string | null;
   contato_status: ContatoStatus | null;
   origem: Origem;
+  na_carteira: boolean;
   consultant_id: string;
   created_at: string;
   updated_at: string;
