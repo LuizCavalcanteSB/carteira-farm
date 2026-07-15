@@ -58,16 +58,16 @@ export function NewClientForm({
             onChange={(e) => setCnpj(formatCnpj(e.target.value))}
             onBlur={handleCnpjBlur}
             placeholder="00.000.000/0000-00"
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
           {isLooking && (
-            <p className="mt-1 text-xs text-zinc-400">Consultando Receita Federal...</p>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Consultando Receita Federal...</p>
           )}
           {lookupError && (
-            <p className="mt-1 text-xs text-amber-400">{lookupError}</p>
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">{lookupError}</p>
           )}
           {lookup && (
-            <p className="mt-1 text-xs text-green-400">
+            <p className="mt-1 text-xs text-green-600 dark:text-green-400">
               Dados encontrados e preenchidos automaticamente.
             </p>
           )}
@@ -79,7 +79,7 @@ export function NewClientForm({
             value={cpf}
             onChange={(e) => setCpf(formatCpf(e.target.value))}
             placeholder="000.000.000-00"
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
           {cpfInvalido && (
             <p className="mt-1 text-xs text-red-400">CPF inválido.</p>
@@ -93,7 +93,7 @@ export function NewClientForm({
           required
           key={lookup?.nome}
           defaultValue={lookup?.nome ?? ""}
-          className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
       </Field>
 
@@ -102,7 +102,7 @@ export function NewClientForm({
           name="razao_social"
           key={lookup?.razao_social}
           defaultValue={lookup?.razao_social ?? ""}
-          className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
       </Field>
 
@@ -112,7 +112,7 @@ export function NewClientForm({
             name="telefone"
             key={lookup?.telefone}
             defaultValue={lookup?.telefone ?? ""}
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </Field>
         <Field label="E-mail">
@@ -121,7 +121,7 @@ export function NewClientForm({
             type="email"
             key={lookup?.email}
             defaultValue={lookup?.email ?? ""}
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </Field>
       </div>
@@ -130,13 +130,13 @@ export function NewClientForm({
         <Field label="Nome do contato">
           <input
             name="contato"
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </Field>
         <Field label="Comprador">
           <input
             name="comprador"
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </Field>
       </div>
@@ -146,7 +146,7 @@ export function NewClientForm({
           name="endereco"
           key={lookup?.endereco}
           defaultValue={lookup?.endereco ?? ""}
-          className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
       </Field>
 
@@ -154,7 +154,7 @@ export function NewClientForm({
         <Field label="Cidade">
           <input
             name="cidade"
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </Field>
         <Field label="Segmento / atividade">
@@ -162,7 +162,7 @@ export function NewClientForm({
             name="segmento"
             key={lookup?.segmento}
             defaultValue={lookup?.segmento ?? ""}
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </Field>
       </div>
@@ -172,7 +172,7 @@ export function NewClientForm({
           name="situacao_cadastral"
           key={lookup?.situacao_cadastral}
           defaultValue={lookup?.situacao_cadastral ?? ""}
-          className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
       </Field>
 
@@ -180,7 +180,7 @@ export function NewClientForm({
         <select
           name="status"
           defaultValue="ativo"
-          className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         >
           <option value="ativo">Ativo</option>
           <option value="prospeccao">Prospecção</option>
@@ -192,7 +192,7 @@ export function NewClientForm({
         <select
           name="perfil_comprador"
           defaultValue=""
-          className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         >
           <option value="">Não informado</option>
           {PERFIL_COMPRADOR_OPTIONS.map((o) => (
@@ -207,7 +207,7 @@ export function NewClientForm({
         <select
           name="porte"
           defaultValue=""
-          className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         >
           <option value="">Não informado</option>
           {PORTE_OPTIONS.map((o) => (
@@ -222,15 +222,15 @@ export function NewClientForm({
         <input
           type="date"
           name="aniversario_empresa"
-          className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
       </Field>
 
-      <div className="rounded-md border border-white/10 bg-white/5 p-3">
-        <p className="text-sm font-medium text-white">
+      <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5">
+        <p className="text-sm font-medium text-chumbo dark:text-white">
           Pedido de entrada (opcional)
         </p>
-        <p className="mt-1 text-xs text-zinc-400">
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           Se o cliente já fechou um pedido com você antes de entrar na
           carteira, preencha o valor e a data abaixo — o card dele já entra
           com o valor comprado e a data. Esse pedido não conta como venda
@@ -243,14 +243,14 @@ export function NewClientForm({
               step="0.01"
               min="0"
               name="valor_pedido_entrada"
-              className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+              className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
             />
           </Field>
           <Field label="Data do pedido">
             <input
               type="date"
               name="data_pedido_entrada"
-              className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+              className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
             />
           </Field>
         </div>
@@ -262,7 +262,7 @@ export function NewClientForm({
             name="consultant_id"
             required
             defaultValue=""
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           >
             <option value="" disabled>
               Selecione o consultor...
@@ -298,7 +298,7 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium text-zinc-300">{label}</label>
+      <label className="text-sm font-medium text-zinc-600 dark:text-zinc-300">{label}</label>
       {children}
     </div>
   );

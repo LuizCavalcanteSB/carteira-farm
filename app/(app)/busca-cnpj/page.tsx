@@ -86,8 +86,8 @@ export default function BuscaCnpjPage() {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Busca CNPJ</h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <h1 className="text-2xl font-semibold text-chumbo dark:text-white">Busca CNPJ</h1>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
           Consulte qualquer CNPJ (cliente ou prospecção) e centralize dados da
           Receita Federal — sócios, porte oficial, situação cadastral — junto
           com anotações do time.
@@ -100,7 +100,7 @@ export default function BuscaCnpjPage() {
           onChange={(e) => setCnpj(formatCnpj(e.target.value))}
           onKeyDown={(e) => e.key === "Enter" && buscar()}
           placeholder="00.000.000/0000-00"
-          className="flex-1 rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="flex-1 rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
         <button
           onClick={buscar}
@@ -116,7 +116,7 @@ export default function BuscaCnpjPage() {
       {resultado && (
         <div className="flex flex-col gap-4">
           {resultado.clienteExistente && (
-            <div className="rounded-lg border border-brand/40 bg-brand/10 px-4 py-3 text-sm text-white">
+            <div className="rounded-lg border border-brand/40 bg-brand/10 px-4 py-3 text-sm text-chumbo dark:text-white">
               Este CNPJ já é cliente:{" "}
               <Link
                 href={`/clientes/${resultado.clienteExistente.id}`}
@@ -127,11 +127,11 @@ export default function BuscaCnpjPage() {
             </div>
           )}
 
-          <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
-            <h2 className="text-lg font-semibold text-white">
+          <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+            <h2 className="text-lg font-semibold text-chumbo dark:text-white">
               {resultado.nome}
             </h2>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
               {resultado.razao_social !== resultado.nome
                 ? `${resultado.razao_social} · `
                 : ""}
@@ -148,8 +148,8 @@ export default function BuscaCnpjPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-white">
+          <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+            <h3 className="text-sm font-semibold text-chumbo dark:text-white">
               Quadro de sócios
             </h3>
             {resultado.socios.length === 0 ? (
@@ -160,9 +160,9 @@ export default function BuscaCnpjPage() {
               <ul className="mt-2 flex flex-col gap-2">
                 {resultado.socios.map((s, i) => (
                   <li key={i} className="text-sm">
-                    <span className="font-medium text-white">{s.nome}</span>
+                    <span className="font-medium text-chumbo dark:text-white">{s.nome}</span>
                     {s.qualificacao && (
-                      <span className="text-zinc-400"> — {s.qualificacao}</span>
+                      <span className="text-zinc-500 dark:text-zinc-400"> — {s.qualificacao}</span>
                     )}
                   </li>
                 ))}
@@ -170,11 +170,11 @@ export default function BuscaCnpjPage() {
             )}
           </div>
 
-          <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-white">
+          <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+            <h3 className="text-sm font-semibold text-chumbo dark:text-white">
               Anotações do time
             </h3>
-            <p className="mt-1 text-xs text-zinc-400">
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
               Estimativa de funcionários e eventos não existem em nenhuma base
               pública — preencha com o que a equipe souber. Fica visível e
               editável por todos.
@@ -182,25 +182,25 @@ export default function BuscaCnpjPage() {
 
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
-                <label className="text-xs uppercase text-zinc-400">
+                <label className="text-xs uppercase text-zinc-500 dark:text-zinc-400">
                   Estimativa de funcionários
                 </label>
                 <input
                   value={estimativa}
                   onChange={(e) => setEstimativa(e.target.value)}
                   placeholder="Ex: 10 a 20"
-                  className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+                  className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs uppercase text-zinc-400">
+                <label className="text-xs uppercase text-zinc-500 dark:text-zinc-400">
                   Eventos que participa
                 </label>
                 <input
                   value={eventos}
                   onChange={(e) => setEventos(e.target.value)}
                   placeholder="Ex: Feira X (março), Congresso Y (setembro)"
-                  className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+                  className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
                 />
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function BuscaCnpjPage() {
             >
               {isPending ? "Salvando..." : "Salvar anotações"}
             </button>
-            {saved && <span className="ml-2 text-sm text-green-400">Salvo!</span>}
+            {saved && <span className="ml-2 text-sm text-green-600 dark:text-green-400">Salvo!</span>}
           </div>
         </div>
       )}
@@ -225,8 +225,8 @@ export default function BuscaCnpjPage() {
 function ReadOnly({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
-      <p className="text-xs uppercase text-zinc-400">{label}</p>
-      <p className="mt-0.5 text-sm text-white">{value || "—"}</p>
+      <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="mt-0.5 text-sm text-chumbo dark:text-white">{value || "—"}</p>
     </div>
   );
 }

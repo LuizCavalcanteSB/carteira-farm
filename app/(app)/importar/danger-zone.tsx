@@ -38,9 +38,9 @@ export function DangerZone({
   }
 
   return (
-    <div className="mt-10 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
-      <h2 className="text-sm font-semibold text-red-300">Zona de perigo</h2>
-      <p className="mt-1 text-sm text-red-300">
+    <div className="mt-10 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
+      <h2 className="text-sm font-semibold text-red-700 dark:text-red-300">Zona de perigo</h2>
+      <p className="mt-1 text-sm text-red-700 dark:text-red-300">
         Apaga todos os clientes de um consultor específico — útil para limpar
         dados de teste antes de uma importação de verdade. Não tem volta.
       </p>
@@ -49,7 +49,7 @@ export function DangerZone({
         <select
           value={selecionado}
           onChange={(e) => setSelecionado(e.target.value)}
-          className="rounded-md border border-red-500/40 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-red-500 focus:outline-none"
+          className="rounded-md border border-red-500/40 bg-white px-3 py-2 text-sm text-chumbo focus:border-red-500 focus:outline-none dark:bg-chumbo-light dark:text-white"
         >
           <option value="">Selecione o consultor...</option>
           {consultores.map((c) => (
@@ -61,7 +61,7 @@ export function DangerZone({
         <button
           onClick={handleClick}
           disabled={isPending || !consultor || consultor.total === 0}
-          className="rounded-md bg-chumbo-light px-4 py-2 text-sm font-medium text-red-400 border border-red-500/30 hover:bg-red-500/10 disabled:opacity-50"
+          className="rounded-md bg-white px-4 py-2 text-sm font-medium text-red-600 border border-red-500/30 hover:bg-red-500/10 disabled:opacity-50 dark:bg-chumbo-light dark:text-red-400"
         >
           {isPending
             ? "Apagando..."
@@ -70,7 +70,7 @@ export function DangerZone({
               : "Apagar clientes"}
         </button>
       </div>
-      {error && <p className="mt-2 text-sm text-red-300">{error}</p>}
+      {error && <p className="mt-2 text-sm text-red-700 dark:text-red-300">{error}</p>}
     </div>
   );
 }

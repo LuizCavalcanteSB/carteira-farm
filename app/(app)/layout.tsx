@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { limiteNotificacaoEntrega } from "@/lib/notifications";
+import { buildNotificationFeed } from "@/lib/notificacoes-feed";
 import { Sidebar } from "./sidebar";
 import { MainContent } from "./main-content";
+import { TopBar } from "./topbar";
 
 export default async function AppLayout({
   children,
@@ -42,6 +44,8 @@ export default async function AppLayout({
   }
   const { count: notificacoesCount } = await notificacoesQuery;
 
+  const notifications = await buildNotificationFeed(supabase, user.id, isAdmin);
+
   return (
     <div className="flex min-h-full flex-col md:flex-row">
       <Sidebar
@@ -50,7 +54,10 @@ export default async function AppLayout({
         avatarUrl={avatarUrl}
         notificacoesCount={notificacoesCount ?? 0}
       />
-      <MainContent>{children}</MainContent>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar notifications={notifications} />
+        <MainContent>{children}</MainContent>
+      </div>
     </div>
   );
 }

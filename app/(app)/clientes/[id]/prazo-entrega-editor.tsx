@@ -39,7 +39,7 @@ export function PrazoEntregaEditor({
 
   return (
     <div>
-      <p className="text-xs uppercase text-zinc-400">
+      <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">
         Prazo previsto de entrega
       </p>
       <div className="mt-0.5 flex items-center gap-2">
@@ -47,7 +47,7 @@ export function PrazoEntregaEditor({
           type="date"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="rounded-md border border-white/20 bg-chumbo-light px-2 py-1 text-sm text-white focus:border-brand focus:outline-none"
+          className="rounded-md border border-chumbo/20 bg-white px-2 py-1 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
         <button
           onClick={handleSave}
@@ -56,17 +56,17 @@ export function PrazoEntregaEditor({
         >
           {isPending ? "Salvando..." : "Salvar"}
         </button>
-        {saved && <span className="text-xs text-green-400">Salvo!</span>}
+        {saved && <span className="text-xs text-green-600 dark:text-green-400">Salvo!</span>}
       </div>
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
       {dias !== null && (
         <p
           className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
             dias < 0
-              ? "bg-red-500/15 text-red-400"
+              ? "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-400"
               : dias <= 3
-                ? "bg-amber-500/15 text-amber-400"
-                : "bg-white/10 text-zinc-300"
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400"
+                : "bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300"
           }`}
         >
           {dias < 0

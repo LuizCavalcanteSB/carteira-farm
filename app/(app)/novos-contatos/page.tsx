@@ -60,8 +60,8 @@ export default async function NovosContatosPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Novos contatos</h1>
-          <p className="text-sm text-zinc-400">
+          <h1 className="text-2xl font-semibold text-chumbo dark:text-white">Novos contatos</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Acompanhe o processo do pedido de cada cliente novo. Arraste o
             card até &ldquo;Incluir na carteira&rdquo; quando ele passar a
             fazer parte da sua carteira normal.

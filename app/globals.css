@@ -1,14 +1,25 @@
 @import "tailwindcss";
 
-/* Paleta CACA 1.0: fundo chumbo (grafite escuro) com detalhes em dourado —
-   pensado pra quem fica a tela inteira olhando pro sistema o dia todo. */
+/* Dark mode via classe .dark na <html> (alternado pelo ThemeToggle), não
+   media query — cada consultor escolhe o tema, não o SO da máquina. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Paleta CACA 1.0: detalhes sempre em dourado sobre chumbo (sidebar, marca).
+   O fundo do conteúdo alterna entre claro e escuro conforme o tema
+   escolhido — pensado pra quem fica a tela inteira olhando pro sistema o
+   dia todo. */
 :root {
-  --background: #2b2b2e;
-  --foreground: #f2f2f0;
+  --background: #f7f7f5;
+  --foreground: #2b2b2e;
   --brand: #f5a800;
   --brand-dark: #c98600;
   --chumbo: #2b2b2e;
   --chumbo-light: #4a4a4e;
+}
+
+.dark {
+  --background: #2b2b2e;
+  --foreground: #f2f2f0;
 }
 
 @theme inline {

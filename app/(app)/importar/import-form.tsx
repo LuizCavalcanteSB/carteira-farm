@@ -188,20 +188,20 @@ export function ImportForm() {
 
   return (
     <div>
-      <div className="rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
+      <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
         <input
           type="file"
           accept=".xlsx,.xls"
           onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-          className="text-sm text-white"
+          className="text-sm text-chumbo dark:text-white"
         />
-        {parseError && <p className="mt-2 text-sm text-red-400">{parseError}</p>}
+        {parseError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{parseError}</p>}
       </div>
 
       {rows.length > 0 && (
         <div className="mt-6">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
               {fileName} · {rows.length} linha(s) com CNPJ encontradas.
               Confira antes de importar.
             </p>
@@ -216,7 +216,7 @@ export function ImportForm() {
             </button>
           </div>
           {isSubmitting && progresso && (
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
               <div
                 className="h-full bg-brand transition-all"
                 style={{
@@ -226,9 +226,9 @@ export function ImportForm() {
             </div>
           )}
 
-          <div className="mt-3 max-h-96 overflow-auto rounded-lg border border-white/10 bg-chumbo-light shadow-sm">
+          <div className="mt-3 max-h-96 overflow-auto rounded-lg border border-chumbo/10 bg-white shadow-sm dark:border-white/10 dark:bg-chumbo-light">
             <table className="w-full text-sm">
-              <thead className="bg-white/5 text-left text-xs uppercase text-zinc-400">
+              <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
                 <tr>
                   <th className="px-3 py-2">CNPJ</th>
                   <th className="px-3 py-2">Nome</th>
@@ -239,16 +239,16 @@ export function ImportForm() {
                   <th className="px-3 py-2">Porte</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/10">
+              <tbody className="divide-y divide-zinc-100 dark:divide-white/10">
                 {rows.map((row, i) => (
                   <tr key={i}>
-                    <td className="px-3 py-2 text-zinc-300">{row.cnpj}</td>
-                    <td className="px-3 py-2 text-white">{row.nome || "—"}</td>
-                    <td className="px-3 py-2 text-zinc-300">{row.telefone || "—"}</td>
-                    <td className="px-3 py-2 text-zinc-300">{row.email || "—"}</td>
-                    <td className="px-3 py-2 text-zinc-300">{row.status || "ativo"}</td>
-                    <td className="px-3 py-2 text-zinc-300">{row.perfil_comprador || "—"}</td>
-                    <td className="px-3 py-2 text-zinc-300">{row.porte || "—"}</td>
+                    <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{row.cnpj}</td>
+                    <td className="px-3 py-2 text-chumbo dark:text-white">{row.nome || "—"}</td>
+                    <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{row.telefone || "—"}</td>
+                    <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{row.email || "—"}</td>
+                    <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{row.status || "ativo"}</td>
+                    <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{row.perfil_comprador || "—"}</td>
+                    <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{row.porte || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -258,12 +258,12 @@ export function ImportForm() {
       )}
 
       {importError && (
-        <p className="mt-4 text-sm text-red-400">{importError}</p>
+        <p className="mt-4 text-sm text-red-600 dark:text-red-400">{importError}</p>
       )}
 
       {results && (
-        <div className="mt-6 rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm">
-          <h2 className="text-sm font-semibold text-white">
+        <div className="mt-6 rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+          <h2 className="text-sm font-semibold text-chumbo dark:text-white">
             Resultado da importação
             {isSubmitting ? " (em andamento...)" : ` (${results.length}/${rows.length})`}
           </h2>
@@ -273,10 +273,10 @@ export function ImportForm() {
                 key={i}
                 className={
                   r.status === "erro"
-                    ? "text-red-400"
+                    ? "text-red-600 dark:text-red-400"
                     : r.mensagem
-                      ? "text-amber-400"
-                      : "text-zinc-300"
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-zinc-600 dark:text-zinc-300"
                 }
               >
                 {r.cnpj} — {r.nome || "sem nome"}:{" "}

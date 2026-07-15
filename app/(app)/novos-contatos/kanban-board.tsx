@@ -79,7 +79,7 @@ export function KanbanBoard({
   return (
     <div className="flex flex-col gap-3">
       {error && (
-        <p className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
           {error}
         </p>
       )}
@@ -113,20 +113,20 @@ export function KanbanBoard({
                   ? "border-brand bg-brand/10"
                   : isDropTarget
                     ? "border-dashed border-emerald-500/40 bg-emerald-500/10"
-                    : "border-white/10 bg-white/5"
+                    : "border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-white/5"
               }`}
             >
-              <div className="flex min-w-0 items-center gap-2 rounded-t-lg border-b border-white/10 px-3 py-2">
+              <div className="flex min-w-0 items-center gap-2 rounded-t-lg border-b border-chumbo/10 px-3 py-2 dark:border-white/10">
                 {!isDropTarget && (
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${ESTAGIO_CONTATO_COLOR[coluna.id as EstagioContato]}`}
                   />
                 )}
-                <span className="min-w-0 truncate text-sm font-semibold text-white">
+                <span className="min-w-0 truncate text-sm font-semibold text-chumbo dark:text-white">
                   {coluna.label}
                 </span>
                 {!isDropTarget && (
-                  <span className="ml-auto shrink-0 rounded-full bg-chumbo px-2 py-0.5 text-xs text-zinc-300">
+                  <span className="ml-auto shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-xs text-zinc-600 dark:bg-chumbo dark:text-zinc-300">
                     {cardsDaColuna.length}
                   </span>
                 )}
@@ -147,21 +147,21 @@ export function KanbanBoard({
                       setDragId(card.id);
                     }}
                     onDragEnd={() => setDragId(null)}
-                    className={`cursor-grab rounded-md border border-white/10 bg-chumbo-light p-3 shadow-sm active:cursor-grabbing ${
+                    className={`cursor-grab rounded-md border border-chumbo/10 bg-white p-3 shadow-sm active:cursor-grabbing dark:border-white/10 dark:bg-chumbo-light ${
                       dragId === card.id ? "opacity-40" : ""
                     }`}
                   >
                     <Link
                       href={`/clientes/${card.id}`}
-                      className="break-words font-medium text-white hover:underline"
+                      className="break-words font-medium text-chumbo hover:underline dark:text-white"
                     >
                       {card.nome}
                     </Link>
-                    <p className="mt-0.5 truncate text-xs text-zinc-400">
+                    <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">
                       {card.cnpj ? formatCnpj(card.cnpj) : formatCpf(card.cpf ?? "")}
                     </p>
                     {isAdmin && (
-                      <p className="mt-1 truncate text-xs text-zinc-400">
+                      <p className="mt-1 truncate text-xs text-zinc-500 dark:text-zinc-400">
                         {consultorNomeById[card.consultantId] ?? "—"}
                       </p>
                     )}
@@ -177,7 +177,7 @@ export function KanbanBoard({
                         onChange={(e) =>
                           moverCard(card.id, e.target.value as EstagioContato)
                         }
-                        className="w-full min-w-0 rounded-md border border-white/20 bg-chumbo-light px-1.5 py-1 text-xs text-white focus:border-brand focus:outline-none disabled:opacity-50"
+                        className="w-full min-w-0 rounded-md border border-chumbo/20 bg-white px-1.5 py-1 text-xs text-chumbo focus:border-chumbo focus:outline-none disabled:opacity-50 dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
                       >
                         {ESTAGIOS_CONTATO.map((e) => (
                           <option key={e} value={e}>

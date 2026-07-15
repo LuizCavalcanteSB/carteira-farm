@@ -43,17 +43,17 @@ export default async function ImportPage() {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-semibold text-white">
+      <h1 className="text-2xl font-semibold text-chumbo dark:text-white">
         Importar planilha
       </h1>
-      <p className="mt-1 text-sm text-zinc-400">
-        Envie um .xlsx com colunas como <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">nome</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">cnpj</code>,{" "}
-        <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">telefone</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">email</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">contato</code>,{" "}
-        <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">comprador</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">segmento</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">cidade</code>,{" "}
-        <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">status</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">perfil</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">porte</code>,{" "}
-        <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">qtd compras</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">faturamento total</code>,{" "}
-        <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">1a compra</code>, <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">última compra</code>,{" "}
-        <code className="rounded bg-white/10 px-1 py-0.5 text-zinc-200">aniversário</code> (data de fundação da empresa). Só o CNPJ é
+      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        Envie um .xlsx com colunas como <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">nome</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">cnpj</code>,{" "}
+        <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">telefone</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">email</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">contato</code>,{" "}
+        <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">comprador</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">segmento</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">cidade</code>,{" "}
+        <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">status</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">perfil</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">porte</code>,{" "}
+        <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">qtd compras</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">faturamento total</code>,{" "}
+        <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">1a compra</code>, <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">última compra</code>,{" "}
+        <code className="rounded bg-zinc-100 px-1 py-0.5 text-zinc-700 dark:bg-white/10 dark:text-zinc-200">aniversário</code> (data de fundação da empresa). Só o CNPJ é
         obrigatório — o resto é completado automaticamente pela Receita
         Federal quando estiver em branco.
       </p>

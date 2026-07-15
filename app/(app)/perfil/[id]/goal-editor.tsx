@@ -39,14 +39,14 @@ export function GoalEditor({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-zinc-400">R$</span>
+      <span className="text-sm text-zinc-500 dark:text-zinc-400">R$</span>
       <input
         type="number"
         min="0"
         step="0.01"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="w-32 rounded-md border border-white/20 bg-chumbo-light px-2 py-1 text-sm text-white focus:border-brand focus:outline-none"
+        className="w-32 rounded-md border border-chumbo/20 bg-white px-2 py-1 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
       />
       <button
         onClick={handleSave}
@@ -55,8 +55,8 @@ export function GoalEditor({
       >
         {isPending ? "Salvando..." : "Salvar meta"}
       </button>
-      {saved && <span className="text-xs text-green-400">Salvo!</span>}
-      {error && <span className="text-xs text-red-400">{error}</span>}
+      {saved && <span className="text-xs text-green-600 dark:text-green-400">Salvo!</span>}
+      {error && <span className="text-xs text-red-600 dark:text-red-400">{error}</span>}
     </div>
   );
 }

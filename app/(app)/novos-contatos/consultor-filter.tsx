@@ -21,7 +21,7 @@ export function ConsultorFilter({
         else params.delete("consultor");
         router.push(`/novos-contatos?${params.toString()}`);
       }}
-      className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+      className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
     >
       <option value="">Todos os consultores</option>
       {consultores.map((c) => (

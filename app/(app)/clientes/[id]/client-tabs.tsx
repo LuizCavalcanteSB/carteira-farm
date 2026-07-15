@@ -51,15 +51,15 @@ export function ClientTabs({
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-white/10">
+      <div className="flex gap-1 border-b border-chumbo/10 dark:border-white/10">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium ${
               tab === t
-                ? "border-b-2 border-brand text-white"
-                : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                ? "border-b-2 border-brand text-chumbo dark:text-white"
+                : "text-zinc-500 hover:bg-zinc-50 hover:text-chumbo dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
             }`}
           >
             {TAB_LABEL[t]}
@@ -107,7 +107,7 @@ function NotesTab({
           required
           rows={3}
           placeholder="Adicionar observação sobre este cliente..."
-          className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
         <button
           type="submit"
@@ -129,8 +129,8 @@ function NotesTab({
               onSaved={() => setEditingId(null)}
             />
           ) : (
-            <li key={note.id} className="rounded-md border border-white/10 bg-white/5 p-3">
-              <p className="whitespace-pre-wrap text-sm text-zinc-200">
+            <li key={note.id} className="rounded-md border border-chumbo/10 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5">
+              <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-200">
                 {note.conteudo}
               </p>
               <div className="mt-1 flex items-center justify-between">
@@ -141,7 +141,7 @@ function NotesTab({
                 <div className="flex gap-3">
                   <button
                     onClick={() => setEditingId(note.id)}
-                    className="text-xs text-white hover:underline"
+                    className="text-xs text-chumbo hover:underline dark:text-white"
                   >
                     Editar
                   </button>
@@ -156,7 +156,7 @@ function NotesTab({
                       }
                     }}
                     disabled={isPending}
-                    className="text-xs text-red-400 hover:underline disabled:opacity-50"
+                    className="text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
                   >
                     Remover
                   </button>
@@ -198,15 +198,15 @@ function NotaEditor({
   }
 
   return (
-    <li className="rounded-md border border-white/30 p-3">
+    <li className="rounded-md border border-chumbo/30 p-3 dark:border-white/30">
       <textarea
         value={conteudo}
         onChange={(e) => setConteudo(e.target.value)}
         rows={3}
         autoFocus
-        className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+        className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
       />
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
       <div className="mt-2 flex gap-2">
         <button
           onClick={salvar}
@@ -218,7 +218,7 @@ function NotaEditor({
         <button
           onClick={onCancel}
           disabled={isPending}
-          className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/5 disabled:opacity-50"
+          className="rounded-md border border-chumbo/20 px-3 py-1.5 text-xs font-medium text-chumbo hover:bg-zinc-50 disabled:opacity-50 dark:border-white/20 dark:text-white dark:hover:bg-white/5"
         >
           Cancelar
         </button>
@@ -255,32 +255,32 @@ function OrdersTab({
         className="flex flex-wrap items-end gap-3"
       >
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-zinc-400">Data do pedido</label>
+          <label className="text-xs text-zinc-500 dark:text-zinc-400">Data do pedido</label>
           <input
             type="date"
             name="data_pedido"
             required
-            className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-zinc-400">Valor (R$)</label>
+          <label className="text-xs text-zinc-500 dark:text-zinc-400">Valor (R$)</label>
           <input
             type="number"
             name="valor"
             step="0.01"
             min="0"
             required
-            className="w-32 rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-32 rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </div>
         <div className="flex flex-1 flex-col gap-1">
-          <label className="text-xs text-zinc-400">Descrição</label>
+          <label className="text-xs text-zinc-500 dark:text-zinc-400">Descrição</label>
           <input
             type="text"
             name="descricao"
             placeholder="Ex: 200 bonés trucker personalizados"
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </div>
         <button
@@ -291,10 +291,10 @@ function OrdersTab({
           {isPending ? "Salvando..." : "Adicionar pedido"}
         </button>
       </form>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <table className="w-full text-sm">
-        <thead className="text-left text-xs uppercase text-zinc-400">
+        <thead className="text-left text-xs uppercase text-zinc-500 dark:text-zinc-400">
           <tr>
             <th className="py-2">Data</th>
             <th className="py-2">Valor</th>
@@ -302,7 +302,7 @@ function OrdersTab({
             <th className="py-2"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/10">
+        <tbody className="divide-y divide-zinc-100 dark:divide-white/10">
           {orders.map((order) => {
             const contabilizado = contaNasEstatisticas(order.data_pedido);
             return (
@@ -312,21 +312,21 @@ function OrdersTab({
                   {!contabilizado && (
                     <span
                       title="Pedido anterior ao início do controle de pedidos no sistema — já está somado no histórico do cliente e não entra nas estatísticas (Pedidos, Total comprado, Ticket médio) para evitar duplicar."
-                      className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs text-zinc-400"
+                      className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-white/10 dark:text-zinc-400"
                     >
                       não contabilizado
                     </span>
                   )}
                 </td>
                 <td className="py-2">{formatCurrency(order.valor)}</td>
-                <td className="py-2 text-zinc-300">{order.descricao || "—"}</td>
+                <td className="py-2 text-zinc-600 dark:text-zinc-300">{order.descricao || "—"}</td>
                 <td className="py-2 text-right">
                   <button
                     onClick={() =>
                       startTransition(() => deleteOrder(clientId, order.id))
                     }
                     disabled={isPending}
-                    className="text-xs text-red-400 hover:underline disabled:opacity-50"
+                    className="text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
                   >
                     Remover
                   </button>
@@ -397,16 +397,16 @@ function PhotosTab({
           className="text-sm"
         />
         {isUploading && (
-          <p className="mt-1 text-xs text-zinc-400">Enviando foto(s)...</p>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Enviando foto(s)...</p>
         )}
-        {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+        {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {photos.map((photo) => (
           <div
             key={photo.id}
-            className="group relative overflow-hidden rounded-lg border border-white/10"
+            className="group relative overflow-hidden rounded-lg border border-chumbo/10 dark:border-white/10"
           >
             {photo.url && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -467,22 +467,22 @@ function LinksTab({
         className="flex flex-wrap items-end gap-3"
       >
         <div className="flex flex-1 flex-col gap-1">
-          <label className="text-xs text-zinc-400">URL do Bitrix</label>
+          <label className="text-xs text-zinc-500 dark:text-zinc-400">URL do Bitrix</label>
           <input
             type="url"
             name="url"
             required
             placeholder="https://seubone.bitrix24.com.br/..."
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </div>
         <div className="flex flex-1 flex-col gap-1">
-          <label className="text-xs text-zinc-400">Descrição</label>
+          <label className="text-xs text-zinc-500 dark:text-zinc-400">Descrição</label>
           <input
             type="text"
             name="descricao"
             placeholder="Ex: Negociação boné trucker maio/26"
-            className="w-full rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </div>
         <button
@@ -493,19 +493,19 @@ function LinksTab({
           {isPending ? "Salvando..." : "Adicionar link"}
         </button>
       </form>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <ul className="flex flex-col gap-2">
         {links.map((link) => (
           <li
             key={link.id}
-            className="flex items-center justify-between gap-3 rounded-md border border-white/10 bg-white/5 p-3"
+            className="flex items-center justify-between gap-3 rounded-md border border-chumbo/10 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5"
           >
             <a
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="min-w-0 flex-1 truncate text-sm text-blue-400 hover:underline"
+              className="min-w-0 flex-1 truncate text-sm text-blue-600 hover:underline dark:text-blue-400"
               title={link.url}
             >
               {link.descricao || link.url}
@@ -513,7 +513,7 @@ function LinksTab({
             <button
               onClick={() => startTransition(() => deleteLink(clientId, link.id))}
               disabled={isPending}
-              className="shrink-0 text-xs text-red-400 hover:underline disabled:opacity-50"
+              className="shrink-0 text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
             >
               Remover
             </button>

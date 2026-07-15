@@ -25,15 +25,15 @@ export function MimoForm({
           }
         })
       }
-      className="flex flex-col gap-3 rounded-lg border border-white/10 bg-chumbo-light p-4 shadow-sm sm:flex-row sm:items-end sm:flex-wrap"
+      className="flex flex-col gap-3 rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light sm:flex-row sm:items-end sm:flex-wrap"
     >
       <div className="flex flex-1 min-w-[200px] flex-col gap-1">
-        <label className="text-xs uppercase text-zinc-400">Cliente</label>
+        <label className="text-xs uppercase text-zinc-500 dark:text-zinc-400">Cliente</label>
         <select
           name="client_id"
           required
           defaultValue=""
-          className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         >
           <option value="" disabled>
             Selecione o cliente...
@@ -47,25 +47,25 @@ export function MimoForm({
       </div>
 
       <div className="flex flex-[2] min-w-[240px] flex-col gap-1">
-        <label className="text-xs uppercase text-zinc-400">
+        <label className="text-xs uppercase text-zinc-500 dark:text-zinc-400">
           Observação (qual mimo será enviado)
         </label>
         <input
           type="text"
           name="observacao"
           placeholder="Ex: Caneca personalizada com o logo"
-          className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs uppercase text-zinc-400">
+        <label className="text-xs uppercase text-zinc-500 dark:text-zinc-400">
           Data de envio
         </label>
         <input
           type="date"
           name="data_envio"
-          className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
       </div>
 
@@ -77,7 +77,7 @@ export function MimoForm({
         {isPending ? "Salvando..." : "Adicionar mimo"}
       </button>
 
-      {error && <p className="w-full text-sm text-red-400">{error}</p>}
+      {error && <p className="w-full text-sm text-red-600 dark:text-red-400">{error}</p>}
     </form>
   );
 }

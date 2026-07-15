@@ -7,11 +7,11 @@ import { MimoForm } from "./mimo-form";
 import { RemoverMimoButton } from "./remover-button";
 
 function statusEnvio(dataEnvio: string | null) {
-  if (!dataEnvio) return { label: "Sem data", cor: "bg-white/10 text-zinc-300" };
+  if (!dataEnvio) return { label: "Sem data", cor: "bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300" };
   const hoje = new Date().toISOString().slice(0, 10);
-  if (dataEnvio < hoje) return { label: "Atrasado", cor: "bg-red-500/15 text-red-400" };
-  if (dataEnvio === hoje) return { label: "Hoje", cor: "bg-amber-500/15 text-amber-400" };
-  return { label: "Agendado", cor: "bg-green-500/15 text-green-400" };
+  if (dataEnvio < hoje) return { label: "Atrasado", cor: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-400" };
+  if (dataEnvio === hoje) return { label: "Hoje", cor: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400" };
+  return { label: "Agendado", cor: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-400" };
 }
 
 export default async function MimosPage({
@@ -63,8 +63,8 @@ export default async function MimosPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Cadastro de Mimo</h1>
-          <p className="text-sm text-zinc-400">
+          <h1 className="text-2xl font-semibold text-chumbo dark:text-white">Cadastro de Mimo</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Agende presentes/brindes para seus clientes.
           </p>
         </div>
@@ -75,9 +75,9 @@ export default async function MimosPage({
 
       <MimoForm clientes={clientes ?? []} />
 
-      <div className="overflow-hidden rounded-lg border border-white/10 bg-chumbo-light shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm dark:border-white/10 dark:bg-chumbo-light">
         <table className="w-full text-sm">
-          <thead className="bg-white/5 text-left text-xs uppercase text-zinc-400">
+          <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
             <tr>
               <th className="px-4 py-3">Cliente</th>
               <th className="px-4 py-3">Observação</th>
@@ -86,22 +86,22 @@ export default async function MimosPage({
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/10">
+          <tbody className="divide-y divide-zinc-100 dark:divide-white/10">
             {(mimos ?? []).map((m) => {
               const cliente = Array.isArray(m.client) ? m.client[0] : m.client;
               const status = statusEnvio(m.data_envio);
               return (
-                <tr key={m.id} className="hover:bg-white/5">
+                <tr key={m.id} className="hover:bg-zinc-50 dark:hover:bg-white/5">
                   <td className="px-4 py-3">
                     <Link
                       href={`/clientes/${cliente?.id}`}
-                      className="font-medium text-white hover:underline"
+                      className="font-medium text-chumbo dark:text-white hover:underline"
                     >
                       {cliente?.nome ?? "—"}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-zinc-300">{m.observacao || "—"}</td>
-                  <td className="px-4 py-3 text-zinc-300">
+                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{m.observacao || "—"}</td>
+                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                     {m.data_envio ? formatDateOnly(m.data_envio) : "—"}
                   </td>
                   <td className="px-4 py-3">

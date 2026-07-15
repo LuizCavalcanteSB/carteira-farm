@@ -45,7 +45,7 @@ export function AvatarUpload({
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-white/10 bg-chumbo-light">
+      <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-chumbo/10 bg-white dark:border-white/10 dark:bg-chumbo-light">
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -54,7 +54,7 @@ export function AvatarUpload({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-zinc-400">
+          <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-zinc-500 dark:text-zinc-400">
             {nome.charAt(0).toUpperCase()}
           </div>
         )}
@@ -67,8 +67,8 @@ export function AvatarUpload({
         disabled={isUploading}
         className="text-xs"
       />
-      {isUploading && <p className="text-xs text-zinc-400">Enviando...</p>}
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {isUploading && <p className="text-xs text-zinc-500 dark:text-zinc-400">Enviando...</p>}
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

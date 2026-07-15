@@ -39,7 +39,7 @@ export function SearchBar({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Buscar por nome, CNPJ ou CPF..."
-        className="w-full max-w-md rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+        className="w-full max-w-md rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
       />
       <button
         type="submit"
@@ -52,7 +52,7 @@ export function SearchBar({
         <select
           value={defaultConsultor}
           onChange={(e) => updateParams({ consultor: e.target.value })}
-          className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+          className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         >
           <option value="">Todos os consultores</option>
           {consultores.map((c) => (
@@ -66,7 +66,7 @@ export function SearchBar({
       <select
         value={defaultOrdenar}
         onChange={(e) => updateParams({ ordenar: e.target.value })}
-        className="rounded-md border border-white/20 bg-chumbo-light px-3 py-2 text-sm text-white focus:border-brand focus:outline-none"
+        className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
       >
         <option value="nome">Ordenar por nome</option>
         <option value="pedidos">Mais pedidos</option>

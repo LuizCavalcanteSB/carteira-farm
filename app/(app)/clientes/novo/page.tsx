@@ -22,11 +22,11 @@ export default async function NewClientPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold text-white">Novo cliente</h1>
-      <p className="mt-1 text-sm text-zinc-400">
+      <h1 className="text-2xl font-semibold text-chumbo dark:text-white">Novo cliente</h1>
+      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
         Digite o CNPJ para buscar os dados automaticamente na Receita Federal.
       </p>
-      <div className="mt-6 rounded-lg border border-white/10 bg-chumbo-light p-6 shadow-sm">
+      <div className="mt-6 rounded-lg border border-chumbo/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
         <NewClientForm consultores={profile?.role === "admin" ? consultores : undefined} />
       </div>
     </div>
