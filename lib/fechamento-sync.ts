@@ -8,7 +8,7 @@ const COLUNAS_NECESSARIAS = [
   "Vendedor",
   "Nome do Cadastro",
   "Telefone do cliente",
-  "Valor",
+  "Valor Produtos",
   "CPF/CNPJ",
   "Perfil do instagram do cliente",
 ] as const;
@@ -18,7 +18,9 @@ type LinhaFechamento = {
   vendedor: string;
   nome: string;
   telefone: string | null;
-  valor: number;
+  // null = célula em branco ou "0" — melhor não preencher histórico de
+  // compra nenhum do que registrar um valor inventado/errado.
+  valor: number | null;
   cnpj: string | null;
   cpf: string | null;
   instagram: string | null;
@@ -82,13 +84,18 @@ export function vendedorEhPermitido(
   });
 }
 
+/** Retorna `null` pra célula em branco, não numérica ou igual a zero —
+ * nesses casos é melhor não preencher nenhum histórico de compra do que
+ * registrar um valor inventado/errado (ver uso em parsearLinhasFechamento). */
 function parseValorMonetario(valor: string): number | null {
+  if (!valor.trim()) return null;
   const limpo = valor
     .replace(/[^\d,.-]/g, "")
     .replace(/\.(?=\d{3}(?:\D|$))/g, "")
     .replace(",", ".");
   const num = Number(limpo);
-  return Number.isFinite(num) ? num : null;
+  if (!Number.isFinite(num) || num === 0) return null;
+  return num;
 }
 
 /** Monta o mapa "nome da coluna → índice" a partir da linha de cabeçalho,
@@ -110,7 +117,10 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
 
   const faltando = COLUNAS_NECESSARIAS.filter((c) => !colunas.has(normalizarTexto(c)));
   if (faltando.length > 0) {
-    throw new Error(`Planilha sem as colunas esperadas: ${faltando.join(", ")}`);
+    throw new Error(
+      `Planilha sem as colunas esperadas: ${faltando.join(", ")}. ` +
+        `Cabeçalhos encontrados na planilha: ${cabecalho.join(" | ")}`,
+    );
   }
 
   const pegar = (linha: string[], coluna: string) =>
@@ -131,14 +141,14 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
     const dataVenda = parseDataBr(pegar(linha, "Data de Venda"));
     if (!dataVenda) continue;
 
-    const valor = parseValorMonetario(pegar(linha, "Valor"));
+    const valor = parseValorMonetario(pegar(linha, "Valor Produtos"));
 
     resultado.push({
       dataVenda,
       vendedor: vendedor || "—",
       nome,
       telefone: pegar(linha, "Telefone do cliente") || null,
-      valor: valor ?? 0,
+      valor,
       cnpj: cpfCnpjDigits.length === 14 ? cpfCnpjDigits : null,
       cpf: cpfCnpjDigits.length === 11 ? cpfCnpjDigits : null,
       instagram: pegar(linha, "Perfil do instagram do cliente") || null,
@@ -194,10 +204,17 @@ export async function sincronizarFechamentos(
         na_carteira: false,
         estagio_contato: "contato_novo",
         consultant_id: null,
-        historico_qtd_compras: 1,
-        historico_faturamento_total: linha.valor,
-        historico_primeira_compra: linha.dataVenda,
-        historico_ultima_compra: linha.dataVenda,
+        // valor em branco/zero na planilha: não inventa histórico de
+        // compra nenhum (fica no default da coluna, zerado) em vez de
+        // registrar uma venda de R$ 0,00 que nunca existiu de verdade.
+        ...(linha.valor !== null
+          ? {
+              historico_qtd_compras: 1,
+              historico_faturamento_total: linha.valor,
+              historico_primeira_compra: linha.dataVenda,
+              historico_ultima_compra: linha.dataVenda,
+            }
+          : {}),
       })
       .select("id")
       .single();
