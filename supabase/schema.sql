@@ -52,6 +52,7 @@ create table public.clients (
   email text,
   contato text,
   comprador text,
+  instagram text,
   segmento text,
   endereco text,
   cidade text,
@@ -81,8 +82,15 @@ create table public.clients (
   -- cliente", sem misturar com o volume de importação de planilha. Default
   -- 'planilha' porque é o caminho de importação em massa (não seta este
   -- campo no upsert, então cai no default em linhas novas e não mexe em
-  -- linhas existentes); "Novo cliente" seta 'manual' explicitamente.
-  origem text not null default 'planilha' check (origem in ('manual', 'planilha')),
+  -- linhas existentes); "Novo cliente" seta 'manual' explicitamente;
+  -- 'fechamento_planilha' é a sincronização automática da planilha de
+  -- fechamento (ver app/api/sync/fechamento).
+  origem text not null default 'planilha' check (
+    origem in ('manual', 'planilha', 'fechamento_planilha')
+  ),
+  -- vendedor externo (da equipe do diretor) que fechou a venda, quando o
+  -- cliente vem da sincronização automática — não é um profile do squad.
+  vendedor_externo text,
   -- fila de "novos contatos": cliente cadastrado manualmente só entra de
   -- fato na carteira do consultor (aparece no dashboard/alertas/metas)
   -- depois que o card é arrastado pra coluna "Incluir na carteira" em
@@ -101,7 +109,10 @@ create table public.clients (
   -- data prevista de entrega do pedido em andamento — usado pra avisar em
   -- /notificacoes quando faltarem 3 dias ou menos (ou já tiver passado).
   prazo_entrega date,
-  consultant_id uuid not null references public.profiles (id),
+  -- null = ainda sem consultor do squad definido (aguardando delegação da
+  -- coordenação) — usado pela sincronização automática da planilha de
+  -- fechamento, que cria o cliente sem saber de antemão de qual consultor é.
+  consultant_id uuid references public.profiles (id),
   created_at timestamptz not null default now(),
   -- auditoria: quem mexeu por último e quando (importação, edição manual,
   -- etc.) — permite conferir na hora se um registro foi tocado recentemente
@@ -350,10 +361,19 @@ create trigger before_profile_update_protect_role
   for each row execute procedure public.protect_profile_role();
 
 -- clients: consultor só vê/edita a própria carteira; admin vê/edita tudo.
+-- `consultant_id is null` entra na cláusula de select pra todo mundo ver a
+-- fila de leads sem dono (ex: vindos da sincronização automática de planilha
+-- de fechamento) em /novos-contatos, mesmo sem ser admin — só quem edita
+-- (drag no kanban, delegar) continua restrito a admin nesse caso, porque
+-- `consultant_id = auth.uid()` nunca bate com null na policy de update.
 create policy "clients_select_own_or_admin"
   on public.clients for select
   to authenticated
-  using (consultant_id = auth.uid() or public.current_role() = 'admin');
+  using (
+    consultant_id = auth.uid()
+    or consultant_id is null
+    or public.current_role() = 'admin'
+  );
 
 create policy "clients_insert_own_or_admin"
   on public.clients for insert

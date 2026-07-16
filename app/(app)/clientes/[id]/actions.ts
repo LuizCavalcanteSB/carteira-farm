@@ -180,7 +180,7 @@ export async function setPrazoEntrega(clientId: string, data: string) {
 // clientes de outra pessoa.
 export async function reassignConsultant(
   clientId: string,
-  newConsultantId: string,
+  newConsultantId: string | null,
 ) {
   const supabase = await createClient();
   const {

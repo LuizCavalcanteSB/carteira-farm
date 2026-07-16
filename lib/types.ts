@@ -35,7 +35,7 @@ export type Porte = "grande" | "medio" | "pequeno";
 
 export type ContatoStatus = "realizado" | "tentativa" | "nao_realizado";
 
-export type Origem = "manual" | "planilha";
+export type Origem = "manual" | "planilha" | "fechamento_planilha";
 
 export type Client = {
   id: string;
@@ -47,6 +47,8 @@ export type Client = {
   email: string | null;
   contato: string | null;
   comprador: string | null;
+  instagram: string | null;
+  vendedor_externo: string | null;
   segmento: string | null;
   endereco: string | null;
   cidade: string | null;
@@ -64,7 +66,7 @@ export type Client = {
   na_carteira: boolean;
   estagio_contato: EstagioContato;
   prazo_entrega: string | null;
-  consultant_id: string;
+  consultant_id: string | null;
   created_at: string;
   updated_at: string;
   updated_by: string | null;

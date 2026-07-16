@@ -17,9 +17,10 @@ type Card = {
   nome: string;
   cnpj: string | null;
   cpf: string | null;
-  consultantId: string;
+  consultantId: string | null;
   createdAt: string;
   estagio: EstagioContato;
+  origem: string;
 };
 
 const INCLUIR_NA_CARTEIRA = "incluir_na_carteira" as const;
@@ -151,18 +152,27 @@ export function KanbanBoard({
                       dragId === card.id ? "opacity-40" : ""
                     }`}
                   >
-                    <Link
-                      href={`/clientes/${card.id}`}
-                      className="break-words font-medium text-chumbo hover:underline dark:text-white"
-                    >
-                      {card.nome}
-                    </Link>
+                    <div className="flex items-start justify-between gap-2">
+                      <Link
+                        href={`/clientes/${card.id}`}
+                        className="break-words font-medium text-chumbo hover:underline dark:text-white"
+                      >
+                        {card.nome}
+                      </Link>
+                      {card.origem === "fechamento_planilha" && (
+                        <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium text-violet-800 dark:bg-violet-500/15 dark:text-violet-400">
+                          Venda fechada
+                        </span>
+                      )}
+                    </div>
                     <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">
                       {card.cnpj ? formatCnpj(card.cnpj) : formatCpf(card.cpf ?? "")}
                     </p>
-                    {isAdmin && (
+                    {(isAdmin || !card.consultantId) && (
                       <p className="mt-1 truncate text-xs text-zinc-500 dark:text-zinc-400">
-                        {consultorNomeById[card.consultantId] ?? "—"}
+                        {card.consultantId
+                          ? consultorNomeById[card.consultantId] ?? "—"
+                          : "Sem consultor — aguardando delegação"}
                       </p>
                     )}
                     <p className="mt-1 truncate text-xs text-zinc-500">

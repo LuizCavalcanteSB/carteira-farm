@@ -1,0 +1,20 @@
+name: Sincronizar planilha de fechamento
+
+on:
+  schedule:
+    # a cada 10 minutos
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chamar rota de sincronização
+        env:
+          PROD_URL: ${{ vars.PROD_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -sf -X POST "$PROD_URL/api/sync/fechamento" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Content-Type: application/json"
