@@ -91,11 +91,13 @@ function parseValorMonetario(valor: string): number | null {
   return Number.isFinite(num) ? num : null;
 }
 
-/** Monta o mapa "nome da coluna → índice" a partir da linha de cabeçalho —
- * assim a sincronização não quebra se alguém reordenar colunas na planilha. */
+/** Monta o mapa "nome da coluna → índice" a partir da linha de cabeçalho,
+ * normalizando (maiúsculas, sem acento, espaços colapsados) — assim a
+ * sincronização não quebra se alguém reordenar colunas, mudar capitalização
+ * ou tiver um espaço a mais/a menos no cabeçalho da planilha. */
 function mapearColunas(cabecalho: string[]): Map<string, number> {
   const mapa = new Map<string, number>();
-  cabecalho.forEach((nome, indice) => mapa.set(nome.trim(), indice));
+  cabecalho.forEach((nome, indice) => mapa.set(normalizarTexto(nome), indice));
   return mapa;
 }
 
@@ -106,13 +108,13 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
   const [cabecalho, ...linhas] = matriz;
   const colunas = mapearColunas(cabecalho);
 
-  const faltando = COLUNAS_NECESSARIAS.filter((c) => !colunas.has(c));
+  const faltando = COLUNAS_NECESSARIAS.filter((c) => !colunas.has(normalizarTexto(c)));
   if (faltando.length > 0) {
     throw new Error(`Planilha sem as colunas esperadas: ${faltando.join(", ")}`);
   }
 
   const pegar = (linha: string[], coluna: string) =>
-    (linha[colunas.get(coluna)!] ?? "").trim();
+    (linha[colunas.get(normalizarTexto(coluna))!] ?? "").trim();
 
   const vendedoresPermitidos = parsearVendedoresPermitidos();
 
