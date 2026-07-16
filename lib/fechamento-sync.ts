@@ -24,6 +24,64 @@ type LinhaFechamento = {
   instagram: string | null;
 };
 
+type VendedorPermitido = { id: string; nome: string };
+
+/** Lê a lista de vendedores cujas vendas devem entrar no Kanban, a partir de
+ * `FECHAMENTO_VENDEDORES_PERMITIDOS` — formato "id:nome,id:nome,..." (ex:
+ * "2576:Lucas Santos,1910:IGOR NEVES"). Sem essa env var configurada,
+ * ninguém passa (falha segura — melhor não importar nada do que importar
+ * vendedor errado por engano). */
+function parsearVendedoresPermitidos(): VendedorPermitido[] {
+  const bruto = process.env.FECHAMENTO_VENDEDORES_PERMITIDOS ?? "";
+  return bruto
+    .split(",")
+    .map((par) => par.trim())
+    .filter(Boolean)
+    .map((par) => {
+      const [id, ...resto] = par.split(":");
+      return { id: id.trim(), nome: resto.join(":").trim() };
+    });
+}
+
+function normalizarTexto(texto: string) {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // remove acentos (á → a, ç → c, ...)
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, " ");
+}
+
+/** Verifica se o texto cru da coluna "Vendedor" bate com algum vendedor
+ * permitido — reconhece o valor vindo só como ID ("2576"), só como nome
+ * ("Lucas Santos") ou os dois juntos ("2576 Lucas Santos", "2576 - Lucas
+ * Santos"), já que não sabemos de antemão qual formato a planilha usa. */
+export function vendedorEhPermitido(
+  vendedorCru: string,
+  permitidos: VendedorPermitido[],
+): boolean {
+  if (permitidos.length === 0) return false;
+
+  const bruto = vendedorCru.trim();
+  const idExtraido = bruto.match(/^(\d+)/)?.[1];
+  // se vier "2576 - Lucas Santos" ou "2576 Lucas Santos", tira o ID e o
+  // separador da frente pra comparar só o nome com o que sobrou.
+  const semId = bruto.replace(/^\d+\s*[-:]?\s*/, "");
+  const textoNormalizado = normalizarTexto(bruto);
+  const textoSemIdNormalizado = normalizarTexto(semId);
+
+  return permitidos.some((p) => {
+    if (idExtraido && p.id === idExtraido) return true;
+    const nomeNormalizado = normalizarTexto(p.nome);
+    if (nomeNormalizado.length === 0) return false;
+    // igualdade exata (não "contém") pra "Victor Varela" não bater com
+    // "Victor Varela Junior" nem com outro vendedor de nome parecido.
+    return (
+      textoNormalizado === nomeNormalizado || textoSemIdNormalizado === nomeNormalizado
+    );
+  });
+}
+
 function parseValorMonetario(valor: string): number | null {
   const limpo = valor
     .replace(/[^\d,.-]/g, "")
@@ -56,8 +114,13 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
   const pegar = (linha: string[], coluna: string) =>
     (linha[colunas.get(coluna)!] ?? "").trim();
 
+  const vendedoresPermitidos = parsearVendedoresPermitidos();
+
   const resultado: LinhaFechamento[] = [];
   for (const linha of linhas) {
+    const vendedor = pegar(linha, "Vendedor");
+    if (!vendedorEhPermitido(vendedor, vendedoresPermitidos)) continue;
+
     const nome = pegar(linha, "Nome do Cadastro");
     const cpfCnpjDigits = onlyDigits(pegar(linha, "CPF/CNPJ"));
     if (!nome || !cpfCnpjDigits) continue;
@@ -70,7 +133,7 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
 
     resultado.push({
       dataVenda,
-      vendedor: pegar(linha, "Vendedor") || "—",
+      vendedor: vendedor || "—",
       nome,
       telefone: pegar(linha, "Telefone do cliente") || null,
       valor: valor ?? 0,
