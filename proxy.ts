@@ -2,6 +2,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/cadastro"];
+// rotas chamadas por automação externa (ex: GitHub Actions), sem sessão de
+// navegador — se autenticam sozinhas por um segredo próprio (CRON_SECRET),
+// não pela sessão de usuário do Supabase.
+const SERVICE_PATHS = ["/api/sync"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -34,7 +38,14 @@ export async function proxy(request: NextRequest) {
   const isPublicPath = PUBLIC_PATHS.some((path) =>
     request.nextUrl.pathname.startsWith(path),
   );
+  const isServicePath = SERVICE_PATHS.some((path) =>
+    request.nextUrl.pathname.startsWith(path),
+  );
   const isApiPath = request.nextUrl.pathname.startsWith("/api");
+
+  if (isServicePath) {
+    return response;
+  }
 
   if (!user && isApiPath) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
