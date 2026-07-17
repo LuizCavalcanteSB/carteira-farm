@@ -10,8 +10,12 @@ const COLUNAS_NECESSARIAS = [
   "Telefone do cliente",
   "Valor Produtos",
   "CPF/CNPJ",
-  "Perfil do instagram do cliente",
 ] as const;
+
+// não entra na lista acima porque nem toda planilha tem essa coluna — sem
+// ela, o Instagram simplesmente fica em branco (ver `pegarOpcional`), em vez
+// de travar a sincronização inteira por causa de uma coluna que não existe.
+const COLUNA_INSTAGRAM = "Perfil do instagram do cliente";
 
 type LinhaFechamento = {
   dataVenda: string; // ISO (AAAA-MM-DD)
@@ -126,6 +130,13 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
   const pegar = (linha: string[], coluna: string) =>
     (linha[colunas.get(normalizarTexto(coluna))!] ?? "").trim();
 
+  // como `pegar`, mas não assume que a coluna existe — devolve "" se a
+  // planilha não tiver essa coluna, em vez de travar em COLUNAS_NECESSARIAS.
+  const pegarOpcional = (linha: string[], coluna: string) => {
+    const indice = colunas.get(normalizarTexto(coluna));
+    return indice === undefined ? "" : (linha[indice] ?? "").trim();
+  };
+
   const vendedoresPermitidos = parsearVendedoresPermitidos();
 
   const resultado: LinhaFechamento[] = [];
@@ -151,7 +162,7 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
       valor,
       cnpj: cpfCnpjDigits.length === 14 ? cpfCnpjDigits : null,
       cpf: cpfCnpjDigits.length === 11 ? cpfCnpjDigits : null,
-      instagram: pegar(linha, "Perfil do instagram do cliente") || null,
+      instagram: pegarOpcional(linha, COLUNA_INSTAGRAM) || null,
     });
   }
 
