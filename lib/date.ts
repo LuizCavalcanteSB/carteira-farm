@@ -9,14 +9,28 @@ export function formatDateOnly(dateStr: string): string {
 }
 
 /**
- * Converte uma data no formato brasileiro ("DD/MM/AAAA", como vem de uma
- * célula de planilha do Google Sheets) para o formato ISO usado nas colunas
- * `date` do Postgres ("AAAA-MM-DD"). Retorna `null` se o texto não bater com
- * o formato esperado.
+ * Converte uma data de célula de planilha do Google Sheets pro formato ISO
+ * usado nas colunas `date` do Postgres ("AAAA-MM-DD"). Aceita tanto
+ * "DD/MM/AAAA" (formato brasileiro) quanto "AAAA-MM-DD" (ISO) — em ambos os
+ * casos, ignora qualquer hora que venha grudada depois (ex: "16/07/2026
+ * 14:30:00" ou "2026-07-16T14:30:00"), já que células de data-e-hora podem
+ * vir formatadas assim dependendo de como a linha foi lançada na planilha.
+ * Retorna `null` se o texto não bater com nenhum dos dois formatos.
  */
 export function parseDataBr(valor: string): string | null {
-  const match = valor.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (!match) return null;
-  const [, dia, mes, ano] = match;
-  return `${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+  const texto = valor.trim();
+
+  const br = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T].*)?$/);
+  if (br) {
+    const [, dia, mes, ano] = br;
+    return `${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+  }
+
+  const iso = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T].*)?$/);
+  if (iso) {
+    const [, ano, mes, dia] = iso;
+    return `${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+  }
+
+  return null;
 }
