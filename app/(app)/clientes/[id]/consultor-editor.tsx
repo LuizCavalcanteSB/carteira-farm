@@ -9,16 +9,16 @@ export function ConsultorEditor({
   consultores,
 }: {
   clientId: string;
-  consultantId: string | null;
+  consultantId: string;
   consultores: { id: string; nome: string }[];
 }) {
-  const [value, setValue] = useState<string | null>(consultantId);
+  const [value, setValue] = useState(consultantId);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  const nomeAtual = consultores.find((c) => c.id === consultantId)?.nome ?? "Sem consultor";
-  const nomeNovo = consultores.find((c) => c.id === value)?.nome ?? "Sem consultor";
+  const nomeAtual = consultores.find((c) => c.id === consultantId)?.nome ?? "—";
+  const nomeNovo = consultores.find((c) => c.id === value)?.nome ?? "—";
 
   function handleSave() {
     if (value === consultantId) return;
@@ -49,12 +49,11 @@ export function ConsultorEditor({
       <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">Consultor responsável</p>
       <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-2">
         <select
-          value={value ?? ""}
-          onChange={(e) => setValue(e.target.value || null)}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
           disabled={isPending}
           className="w-full min-w-0 truncate rounded-md border border-chumbo/20 bg-white px-2 py-1 text-sm text-chumbo focus:border-chumbo focus:outline-none disabled:opacity-50 sm:w-auto dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         >
-          <option value="">Sem consultor</option>
           {consultores.map((c) => (
             <option key={c.id} value={c.id}>
               {c.nome}

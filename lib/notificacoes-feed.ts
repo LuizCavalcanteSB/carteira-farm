@@ -123,13 +123,7 @@ async function calcularItensAtivos(
       diasRestantes: info.diasRestantes,
     }));
 
-  // Clientes sem consultor definido (ex: aguardando delegação da fila de
-  // sincronização automática) não têm pra quem notificar ainda — a tabela
-  // `notificacoes` exige consultant_id, e o admin, que enxerga tudo, pode
-  // trazer esses clientes nas queries acima sem filtro de consultor.
-  return [...itensNovoContato, ...itensEntrega, ...itensAniversario].filter(
-    (item) => item.consultantId != null,
-  );
+  return [...itensNovoContato, ...itensEntrega, ...itensAniversario];
 }
 
 /** Materializa os itens ativos na tabela `notificacoes` (cria os novos,

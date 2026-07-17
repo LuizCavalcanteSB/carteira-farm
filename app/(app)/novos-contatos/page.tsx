@@ -30,7 +30,7 @@ export default async function NovosContatosPage({
 
   let query = supabase
     .from("clients")
-    .select("id, nome, cnpj, cpf, consultant_id, created_at, estagio_contato, origem")
+    .select("id, nome, cnpj, cpf, consultant_id, created_at, estagio_contato")
     .eq("na_carteira", false)
     .order("created_at", { ascending: true });
 
@@ -54,7 +54,6 @@ export default async function NovosContatosPage({
     consultantId: c.consultant_id,
     createdAt: c.created_at,
     estagio: c.estagio_contato as EstagioContato,
-    origem: c.origem as string,
   }));
 
   return (

@@ -71,9 +71,7 @@ export default async function ClientPage({
       .select("*")
       .eq("client_id", id)
       .order("created_at", { ascending: false }),
-    client.consultant_id
-      ? supabase.from("profiles").select("nome").eq("id", client.consultant_id).single()
-      : Promise.resolve({ data: null }),
+    supabase.from("profiles").select("nome").eq("id", client.consultant_id).single(),
   ]);
 
   const isAdmin = viewerProfile?.role === "admin";
