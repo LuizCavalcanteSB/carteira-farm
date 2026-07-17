@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { ESTAGIOS_CONTATO, type EstagioContato } from "@/lib/kanban";
+import { PENDENCIA_LABEL, verificarPerfilCompleto } from "@/lib/perfil-completo";
 
 export async function atualizarContatoStatus(
   clientId: string,
@@ -25,6 +26,13 @@ export async function atualizarContatoStatus(
 // aparecer no dashboard, alertas e metas normalmente.
 export async function confirmarPrimeiroContato(clientId: string) {
   const supabase = await createClient();
+
+  const pendencias = await verificarPerfilCompleto(supabase, clientId);
+  if (pendencias.length > 0) {
+    const lista = pendencias.map((p) => PENDENCIA_LABEL[p]).join(", ");
+    return { error: `Preencha antes de incluir na carteira: ${lista}.` };
+  }
+
   const { error } = await supabase
     .from("clients")
     .update({ contato_status: "realizado", na_carteira: true })

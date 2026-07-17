@@ -3,6 +3,7 @@ import { fetchAllRows } from "@/lib/paginate";
 import { ConsultorFilter } from "./consultor-filter";
 import { KanbanBoard } from "./kanban-board";
 import type { EstagioContato } from "@/lib/kanban";
+import { verificarPerfisCompletos } from "@/lib/perfil-completo";
 
 export default async function NovosContatosPage({
   searchParams,
@@ -30,7 +31,9 @@ export default async function NovosContatosPage({
 
   let query = supabase
     .from("clients")
-    .select("id, nome, cnpj, cpf, consultant_id, created_at, estagio_contato")
+    .select(
+      "id, nome, cnpj, cpf, consultant_id, created_at, estagio_contato, historico_qtd_compras",
+    )
     .eq("na_carteira", false)
     .order("created_at", { ascending: true });
 
@@ -46,6 +49,11 @@ export default async function NovosContatosPage({
     consultores.map((c) => [c.id, c.nome]),
   );
 
+  const pendenciasPorCliente = await verificarPerfisCompletos(
+    supabase,
+    clientes ?? [],
+  );
+
   const cards = (clientes ?? []).map((c) => ({
     id: c.id,
     nome: c.nome,
@@ -54,6 +62,7 @@ export default async function NovosContatosPage({
     consultantId: c.consultant_id,
     createdAt: c.created_at,
     estagio: c.estagio_contato as EstagioContato,
+    pendencias: pendenciasPorCliente.get(c.id) ?? [],
   }));
 
   return (

@@ -11,6 +11,7 @@ import {
   type EstagioContato,
 } from "@/lib/kanban";
 import { confirmarPrimeiroContato, moverEstagioContato } from "../contato-actions";
+import { PENDENCIA_LABEL, type Pendencia } from "@/lib/perfil-completo";
 
 type Card = {
   id: string;
@@ -20,6 +21,7 @@ type Card = {
   consultantId: string;
   createdAt: string;
   estagio: EstagioContato;
+  pendencias: Pendencia[];
 };
 
 const INCLUIR_NA_CARTEIRA = "incluir_na_carteira" as const;
@@ -48,6 +50,13 @@ export function KanbanBoard({
     setError(null);
 
     if (destino === INCLUIR_NA_CARTEIRA) {
+      if (card.pendencias.length > 0) {
+        const lista = card.pendencias.map((p) => PENDENCIA_LABEL[p]).join(", ");
+        setError(
+          `${card.nome}: preencha antes de incluir na carteira — ${lista}.`,
+        );
+        return;
+      }
       setCards((prev) => prev.filter((c) => c.id !== clientId));
       startTransition(async () => {
         const result = await confirmarPrimeiroContato(clientId);
@@ -169,6 +178,14 @@ export function KanbanBoard({
                       Adicionado em{" "}
                       {new Date(card.createdAt).toLocaleDateString("pt-BR")}
                     </p>
+                    {card.pendencias.length > 0 && (
+                      <p
+                        className="mt-1 truncate text-xs text-amber-600 dark:text-amber-400"
+                        title={`Falta: ${card.pendencias.map((p) => PENDENCIA_LABEL[p]).join(", ")}`}
+                      >
+                        Falta: {card.pendencias.map((p) => PENDENCIA_LABEL[p]).join(", ")}
+                      </p>
+                    )}
 
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <select
@@ -187,7 +204,12 @@ export function KanbanBoard({
                       </select>
                       <button
                         onClick={() => moverCard(card.id, INCLUIR_NA_CARTEIRA)}
-                        disabled={isPending}
+                        disabled={isPending || card.pendencias.length > 0}
+                        title={
+                          card.pendencias.length > 0
+                            ? `Falta: ${card.pendencias.map((p) => PENDENCIA_LABEL[p]).join(", ")}`
+                            : undefined
+                        }
                         className="ml-auto shrink-0 rounded-md bg-brand px-2 py-1 text-xs font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
                       >
                         Incluir
