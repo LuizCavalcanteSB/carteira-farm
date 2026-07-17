@@ -112,10 +112,30 @@ function mapearColunas(cabecalho: string[]): Map<string, number> {
   return mapa;
 }
 
-/** Extrai só as linhas com CPF/CNPJ e nome válidos — pura, sem I/O, testável
- * isoladamente com uma matriz de exemplo. */
-export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
-  if (matriz.length === 0) return [];
+export type DiagnosticoPlanilha = {
+  totalLinhasNaPlanilha: number;
+  linhasDeVendedorPermitido: number;
+  dataVendaMaisRecenteEncontrada: string | null;
+  dataMinimaConfigurada: string | null;
+};
+
+/** Extrai só as linhas com CPF/CNPJ e nome válidos, junto de um diagnóstico
+ * (quantas linhas bateram o filtro de vendedor antes do filtro de data, e
+ * qual a venda mais recente encontrada entre elas) — ajuda a diferenciar
+ * "o filtro de data tá cortando demais" de "não tem venda recente desses
+ * vendedores na planilha mesmo". Pura, sem I/O, testável com uma matriz. */
+export function analisarPlanilhaFechamento(matriz: string[][]): {
+  linhas: LinhaFechamento[];
+  diagnostico: DiagnosticoPlanilha;
+} {
+  const diagnostico: DiagnosticoPlanilha = {
+    totalLinhasNaPlanilha: Math.max(matriz.length - 1, 0),
+    linhasDeVendedorPermitido: 0,
+    dataVendaMaisRecenteEncontrada: null,
+    dataMinimaConfigurada: process.env.FECHAMENTO_DATA_MINIMA ?? null,
+  };
+
+  if (matriz.length === 0) return { linhas: [], diagnostico };
   const [cabecalho, ...linhas] = matriz;
   const colunas = mapearColunas(cabecalho);
 
@@ -138,22 +158,32 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
   };
 
   const vendedoresPermitidos = parsearVendedoresPermitidos();
+  const dataMinima = diagnostico.dataMinimaConfigurada;
 
   const resultado: LinhaFechamento[] = [];
   for (const linha of linhas) {
     const vendedor = pegar(linha, "Vendedor");
     if (!vendedorEhPermitido(vendedor, vendedoresPermitidos)) continue;
 
+    diagnostico.linhasDeVendedorPermitido++;
+    const dataVendaBruta = parseDataBr(pegar(linha, "Data de Venda"));
+    if (
+      dataVendaBruta &&
+      (!diagnostico.dataVendaMaisRecenteEncontrada ||
+        dataVendaBruta > diagnostico.dataVendaMaisRecenteEncontrada)
+    ) {
+      diagnostico.dataVendaMaisRecenteEncontrada = dataVendaBruta;
+    }
+
     const nome = pegar(linha, "Nome do Cadastro");
     const cpfCnpjDigits = onlyDigits(pegar(linha, "CPF/CNPJ"));
     if (!nome || !cpfCnpjDigits) continue;
     if (cpfCnpjDigits.length !== 11 && cpfCnpjDigits.length !== 14) continue;
 
-    const dataVenda = parseDataBr(pegar(linha, "Data de Venda"));
+    const dataVenda = dataVendaBruta;
     if (!dataVenda) continue;
     // FECHAMENTO_DATA_MINIMA (ex: "2026-07-16") ignora tudo que veio antes
     // dela — evita reimportar anos de histórico da planilha de uma vez só.
-    const dataMinima = process.env.FECHAMENTO_DATA_MINIMA;
     if (dataMinima && dataVenda < dataMinima) continue;
 
     const valor = parseValorMonetario(pegar(linha, "Valor Produtos"));
@@ -170,13 +200,20 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
     });
   }
 
-  return resultado;
+  return { linhas: resultado, diagnostico };
+}
+
+/** Só as linhas válidas, sem o diagnóstico — mantido pra quem só precisa
+ * disso (ex: os testes isolados já escritos pra esse parser). */
+export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
+  return analisarPlanilhaFechamento(matriz).linhas;
 }
 
 export type ResumoSincronizacao = {
   importados: number;
   ignorados: number;
   erros: string[];
+  diagnostico: DiagnosticoPlanilha;
 };
 
 /** Lê a planilha de fechamento e cria, no Kanban de Novos Contatos, um
@@ -187,9 +224,9 @@ export async function sincronizarFechamentos(
   supabase: SupabaseClient,
 ): Promise<ResumoSincronizacao> {
   const matriz = await lerLinhasPlanilhaFechamento();
-  const linhas = parsearLinhasFechamento(matriz);
+  const { linhas, diagnostico } = analisarPlanilhaFechamento(matriz);
 
-  const resumo: ResumoSincronizacao = { importados: 0, ignorados: 0, erros: [] };
+  const resumo: ResumoSincronizacao = { importados: 0, ignorados: 0, erros: [], diagnostico };
 
   for (const linha of linhas) {
     const coluna = linha.cnpj ? "cnpj" : "cpf";
