@@ -151,6 +151,10 @@ export function parsearLinhasFechamento(matriz: string[][]): LinhaFechamento[] {
 
     const dataVenda = parseDataBr(pegar(linha, "Data de Venda"));
     if (!dataVenda) continue;
+    // FECHAMENTO_DATA_MINIMA (ex: "2026-07-16") ignora tudo que veio antes
+    // dela — evita reimportar anos de histórico da planilha de uma vez só.
+    const dataMinima = process.env.FECHAMENTO_DATA_MINIMA;
+    if (dataMinima && dataVenda < dataMinima) continue;
 
     const valor = parseValorMonetario(pegar(linha, "Valor Produtos"));
 
