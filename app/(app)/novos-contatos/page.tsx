@@ -82,6 +82,7 @@ export default async function NovosContatosPage({
       </div>
 
       <KanbanBoard
+        key={consultor ?? "todos"}
         initialCards={cards}
         isAdmin={isAdmin}
         consultorNomeById={consultorNomeById}
