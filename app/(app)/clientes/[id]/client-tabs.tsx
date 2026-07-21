@@ -34,7 +34,7 @@ import type {
   Order,
   OrderPhoto,
 } from "@/lib/types";
-import { formatDateOnly } from "@/lib/date";
+import { diasAte, formatDateOnly } from "@/lib/date";
 import { comprimirImagem } from "@/lib/image-compress";
 import { contaNasEstatisticas } from "@/lib/orders";
 
@@ -640,13 +640,6 @@ function LinksTab({
   );
 }
 
-function diasAteData(dataISO: string) {
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const alvo = new Date(`${dataISO}T00:00:00`);
-  return Math.round((alvo.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-}
-
 function ActionPlanTab({
   clientId,
   items,
@@ -679,40 +672,52 @@ function ActionPlanTab({
             }
           })
         }
-        className="flex flex-wrap items-end gap-3"
+        className="flex flex-col gap-3"
       >
-        <div className="flex flex-1 flex-col gap-1">
-          <label className="text-xs text-zinc-500 dark:text-zinc-400">Próxima ação</label>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-zinc-500 dark:text-zinc-400">Objetivo (opcional)</label>
           <input
             type="text"
-            name="descricao"
-            required
-            placeholder="Ex: Ligar pra renegociar prazo"
+            name="objetivo"
+            placeholder="Ex: Reativar cliente parado há 3 meses"
             className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-zinc-500 dark:text-zinc-400">Data</label>
-          <input
-            type="date"
-            name="data_prevista"
-            defaultValue={new Date().toISOString().slice(0, 10)}
-            className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
-          />
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-1 flex-col gap-1">
+            <label className="text-xs text-zinc-500 dark:text-zinc-400">O que fazer</label>
+            <input
+              type="text"
+              name="descricao"
+              required
+              placeholder="Ex: Ligar oferecendo desconto de reativação"
+              className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-zinc-500 dark:text-zinc-400">Até quando</label>
+            <input
+              type="date"
+              name="data_prevista"
+              required
+              defaultValue={new Date().toISOString().slice(0, 10)}
+              className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
+          >
+            {isPending ? "Salvando..." : "Adicionar ação"}
+          </button>
         </div>
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
-        >
-          {isPending ? "Salvando..." : "Adicionar ação"}
-        </button>
       </form>
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <ul className="flex flex-col gap-2">
         {pendentes.map((item) => {
-          const dias = diasAteData(item.data_prevista);
+          const dias = diasAte(item.data_prevista);
           const badge =
             dias < 0
               ? "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-400"
@@ -742,8 +747,11 @@ function ActionPlanTab({
                 className="h-5 w-5 shrink-0 rounded-full border-2 border-chumbo/30 hover:border-brand disabled:opacity-50 dark:border-white/30"
               />
               <div className="min-w-0 flex-1">
+                {item.objetivo && (
+                  <p className="text-xs font-semibold text-chumbo dark:text-white">{item.objetivo}</p>
+                )}
                 <p className="text-sm text-zinc-700 dark:text-zinc-200">{item.descricao}</p>
-                <p className="text-xs text-zinc-500">{formatDateOnly(item.data_prevista)}</p>
+                <p className="text-xs text-zinc-500">Até {formatDateOnly(item.data_prevista)}</p>
               </div>
               <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${badge}`}>
                 {label}
@@ -787,10 +795,15 @@ function ActionPlanTab({
                   ✓
                 </button>
                 <div className="min-w-0 flex-1">
+                  {item.objetivo && (
+                    <p className="text-xs font-semibold text-zinc-600 line-through dark:text-zinc-300">
+                      {item.objetivo}
+                    </p>
+                  )}
                   <p className="text-sm text-zinc-700 line-through dark:text-zinc-200">
                     {item.descricao}
                   </p>
-                  <p className="text-xs text-zinc-500">{formatDateOnly(item.data_prevista)}</p>
+                  <p className="text-xs text-zinc-500">Até {formatDateOnly(item.data_prevista)}</p>
                 </div>
                 <button
                   onClick={() => startTransition(() => deleteActionItem(clientId, item.id))}

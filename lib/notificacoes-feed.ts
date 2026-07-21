@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchAllRows } from "./paginate";
-import { limiteNotificacaoEntrega } from "./notifications";
+import { limiteNotificacaoAntecedencia } from "./notifications";
 import { calcularProximoAniversario, diasDesde } from "./alertas";
 import { diasAte } from "./date";
 
-export type NotificationKind = "novo_contato" | "entrega" | "aniversario";
+export type NotificationKind = "novo_contato" | "entrega" | "aniversario" | "plano_acao";
 
 export type NotificationItem = {
   id: string;
@@ -61,10 +61,23 @@ async function calcularItensAtivos(
     .from("clients")
     .select("id, nome, consultant_id, prazo_entrega")
     .not("prazo_entrega", "is", null)
-    .lte("prazo_entrega", limiteNotificacaoEntrega());
+    .lte("prazo_entrega", limiteNotificacaoAntecedencia());
   if (!isAdmin) entregaQuery = entregaQuery.eq("consultant_id", userId);
   const { data: entregas } = await fetchAllRows((from, to) =>
     entregaQuery.range(from, to),
+  );
+
+  // client_action_items já é protegido por RLS (só o próprio consultor ou
+  // admin enxerga), então não precisa de um .eq("consultant_id", ...)
+  // explícito aqui — diferente das outras queries acima, que consultam
+  // `clients` diretamente e não têm essa mesma trava por padrão.
+  const { data: planosAcao } = await fetchAllRows((from, to) =>
+    supabase
+      .from("client_action_items")
+      .select("id, client_id, objetivo, descricao, data_prevista, cliente:clients(nome, consultant_id)")
+      .eq("concluido", false)
+      .lte("data_prevista", limiteNotificacaoAntecedencia())
+      .range(from, to),
   );
 
   let aniversarioQuery = supabase
@@ -119,7 +132,22 @@ async function calcularItensAtivos(
       diasRestantes: info.diasRestantes,
     }));
 
-  return [...itensNovoContato, ...itensEntrega, ...itensAniversario];
+  // supabase-js sem tipos gerados do banco tipa o embed `cliente` como
+  // array mesmo sendo sempre 0 ou 1 (client_action_items → clients é N:1).
+  const itensPlanoAcao: RawItem[] = (planosAcao ?? [])
+    .map((item) => ({ item, cliente: item.cliente?.[0] }))
+    .filter(({ cliente }) => cliente)
+    .map(({ item, cliente }) => ({
+      consultantId: cliente!.consultant_id,
+      clientId: item.client_id,
+      clientName: cliente!.nome,
+      kind: "plano_acao" as const,
+      chave: `plano_acao:${item.id}`,
+      mensagem: item.objetivo ? `${item.objetivo} — ${item.descricao}` : item.descricao,
+      diasRestantes: diasAte(item.data_prevista),
+    }));
+
+  return [...itensNovoContato, ...itensEntrega, ...itensAniversario, ...itensPlanoAcao];
 }
 
 /** Materializa os itens ativos na tabela `notificacoes` (cria os novos,

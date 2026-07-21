@@ -2,9 +2,23 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Bell, Cake, PhoneCall, Truck } from "lucide-react";
+import { Bell, Cake, ListChecks, PhoneCall, Truck } from "lucide-react";
 import type { NotificationItem } from "@/lib/notificacoes-feed";
 import { marcarNotificacaoLida } from "./notificacoes-actions";
+
+const ICONE_POR_KIND = {
+  entrega: Truck,
+  novo_contato: PhoneCall,
+  aniversario: Cake,
+  plano_acao: ListChecks,
+} as const;
+
+const COR_POR_KIND = {
+  entrega: "bg-brand/15 text-brand-dark dark:bg-brand/20 dark:text-brand",
+  novo_contato: "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+  aniversario: "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+  plano_acao: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+} as const;
 
 export function NotificationBell({ items }: { items: NotificationItem[] }) {
   const [open, setOpen] = useState(false);
@@ -48,7 +62,9 @@ export function NotificationBell({ items }: { items: NotificationItem[] }) {
                 Nenhuma notificação por aqui.
               </p>
             )}
-            {items.map((item) => (
+            {items.map((item) => {
+              const Icone = ICONE_POR_KIND[item.kind];
+              return (
               <Link
                 key={item.id}
                 href={`/clientes/${item.clientId}`}
@@ -59,21 +75,9 @@ export function NotificationBell({ items }: { items: NotificationItem[] }) {
                 className="flex items-start gap-3 border-b border-chumbo/5 px-4 py-3 last:border-b-0 hover:bg-zinc-50 dark:border-white/5 dark:hover:bg-white/5"
               >
                 <span
-                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                    item.kind === "entrega"
-                      ? "bg-brand/15 text-brand-dark dark:bg-brand/20 dark:text-brand"
-                      : item.kind === "novo_contato"
-                        ? "bg-violet-500/15 text-violet-600 dark:text-violet-400"
-                        : "bg-sky-500/15 text-sky-600 dark:text-sky-400"
-                  }`}
+                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${COR_POR_KIND[item.kind]}`}
                 >
-                  {item.kind === "entrega" ? (
-                    <Truck size={16} />
-                  ) : item.kind === "novo_contato" ? (
-                    <PhoneCall size={16} />
-                  ) : (
-                    <Cake size={16} />
-                  )}
+                  <Icone size={16} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-chumbo dark:text-white">
@@ -84,7 +88,8 @@ export function NotificationBell({ items }: { items: NotificationItem[] }) {
                   </span>
                 </span>
               </Link>
-            ))}
+              );
+            })}
           </div>
           <Link
             href="/notificacoes"

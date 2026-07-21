@@ -102,16 +102,22 @@ export async function addActionItem(clientId: string, formData: FormData) {
   const descricao = String(formData.get("descricao") ?? "").trim();
   if (!descricao) return { error: "Descreva a ação a fazer." };
 
+  const objetivo = String(formData.get("objetivo") ?? "").trim() || null;
   const dataPrevista = String(formData.get("data_prevista") ?? "").trim();
+  if (!dataPrevista) return { error: "Informe até quando essa ação deve ser feita." };
 
   const supabase = await createClient();
   const { error } = await supabase.from("client_action_items").insert({
     client_id: clientId,
+    objetivo,
     descricao,
-    data_prevista: dataPrevista || undefined,
+    data_prevista: dataPrevista,
   });
 
   if (error) return { error: error.message };
+
+  // O sino de notificações lê client_action_items no layout compartilhado.
+  revalidatePath("/", "layout");
 
   revalidatePath(`/clientes/${clientId}`);
   return { error: null };
@@ -130,6 +136,8 @@ export async function toggleActionItem(
 
   if (error) return { error: error.message };
 
+  // Concluir uma ação tira ela do sino de notificações.
+  revalidatePath("/", "layout");
   revalidatePath(`/clientes/${clientId}`);
   return { error: null };
 }
@@ -137,6 +145,7 @@ export async function toggleActionItem(
 export async function deleteActionItem(clientId: string, itemId: string) {
   const supabase = await createClient();
   await supabase.from("client_action_items").delete().eq("id", itemId);
+  revalidatePath("/", "layout");
   revalidatePath(`/clientes/${clientId}`);
 }
 

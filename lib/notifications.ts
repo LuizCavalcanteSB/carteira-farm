@@ -1,7 +1,8 @@
 export const NOTIFICACAO_ANTECEDENCIA_DIAS = 3;
 
-/** Data limite (inclusive) para considerar um prazo_entrega como notificável. */
-export function limiteNotificacaoEntrega() {
+/** Data limite (inclusive) pra considerar uma data futura (prazo_entrega,
+ * data_prevista do plano de ação) como notificável. */
+export function limiteNotificacaoAntecedencia() {
   const limite = new Date();
   limite.setHours(0, 0, 0, 0);
   limite.setDate(limite.getDate() + NOTIFICACAO_ANTECEDENCIA_DIAS);

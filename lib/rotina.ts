@@ -85,7 +85,7 @@ export async function buildRotinaItems(
   const acaoQuery = supabase
     .from("client_action_items")
     .select(
-      "id, client_id, descricao, data_prevista, cliente:clients(nome, cnpj, cpf, consultant_id)",
+      "id, client_id, objetivo, descricao, data_prevista, cliente:clients(nome, cnpj, cpf, consultant_id)",
     )
     .eq("concluido", false);
 
@@ -186,7 +186,7 @@ export async function buildRotinaItems(
       cpf: cliente!.cpf,
       consultantId: cliente!.consultant_id,
       kind: "plano_acao" as const,
-      mensagem: item.descricao,
+      mensagem: item.objetivo ? `${item.objetivo} — ${item.descricao}` : item.descricao,
       diasRestantes: diasAte(item.data_prevista),
     }));
 

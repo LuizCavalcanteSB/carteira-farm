@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Cake, PhoneCall, Truck } from "lucide-react";
+import { Cake, ListChecks, PhoneCall, Truck } from "lucide-react";
 import type { HistoricoNotificacao } from "@/lib/notificacoes-feed";
 import { marcarNotificacaoLida } from "../notificacoes-actions";
 
@@ -9,12 +9,14 @@ const ICONE_POR_KIND = {
   entrega: Truck,
   novo_contato: PhoneCall,
   aniversario: Cake,
+  plano_acao: ListChecks,
 } as const;
 
 const COR_POR_KIND = {
   entrega: "bg-brand/15 text-brand-dark dark:bg-brand/20 dark:text-brand",
   novo_contato: "bg-violet-500/15 text-violet-600 dark:text-violet-400",
   aniversario: "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+  plano_acao: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
 } as const;
 
 function formatarData(iso: string) {

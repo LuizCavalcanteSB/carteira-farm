@@ -188,6 +188,7 @@ create index client_links_client_id_idx on public.client_links (client_id);
 create table public.client_action_items (
   id uuid primary key default gen_random_uuid(),
   client_id uuid not null references public.clients (id) on delete cascade,
+  objetivo text,
   descricao text not null,
   data_prevista date not null default current_date,
   concluido boolean not null default false,
@@ -245,7 +246,7 @@ create table public.notificacoes (
   id uuid primary key default gen_random_uuid(),
   consultant_id uuid not null references public.profiles (id),
   client_id uuid not null references public.clients (id) on delete cascade,
-  kind text not null check (kind in ('novo_contato', 'entrega', 'aniversario')),
+  kind text not null check (kind in ('novo_contato', 'entrega', 'aniversario', 'plano_acao')),
   chave text not null,
   mensagem text not null,
   ativo boolean not null default true,
