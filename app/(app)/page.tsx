@@ -4,6 +4,8 @@ import { formatCnpj, onlyDigits } from "@/lib/cnpj";
 import { formatCpf } from "@/lib/cpf";
 import { formatDateOnly } from "@/lib/date";
 import { fetchAllRows } from "@/lib/paginate";
+import { urgenciaPedido, type UrgenciaTom } from "@/lib/alertas";
+import { corDoAvatar, iniciaisDoNome } from "@/lib/avatar";
 import { SearchBar } from "./search-bar";
 import { ContatoStatusSelect } from "./contato-status-select";
 import type { ClientStatus, ContatoStatus } from "@/lib/types";
@@ -18,6 +20,22 @@ const STATUS_COLOR: Record<ClientStatus, string> = {
   ativo: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-400",
   inativo: "bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-300",
   prospeccao: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
+};
+
+const TOM_BORDA: Record<UrgenciaTom, string> = {
+  red: "border-l-red-500",
+  orange: "border-l-orange-500",
+  amber: "border-l-amber-500",
+  emerald: "border-l-emerald-500",
+  muted: "border-l-transparent",
+};
+
+const TOM_TEXTO: Record<UrgenciaTom, string> = {
+  red: "text-red-600 dark:text-red-400",
+  orange: "text-orange-600 dark:text-orange-400",
+  amber: "text-amber-600 dark:text-amber-400",
+  emerald: "text-emerald-600 dark:text-emerald-400",
+  muted: "text-zinc-500 dark:text-zinc-400",
 };
 
 function formatCurrency(value: number) {
@@ -184,82 +202,96 @@ export default async function DashboardPage({
         <ResumoCard label="Incompletos" value={String(totais.incompletos)} />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-chumbo/10 bg-white shadow-sm dark:border-white/10 dark:bg-chumbo-light">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-left text-xs uppercase text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
-            <tr>
-              <th className="px-4 py-3">Cliente</th>
-              <th className="px-4 py-3">CNPJ/CPF</th>
-              <th className="px-4 py-3">Status</th>
-              {isAdmin && <th className="px-4 py-3">Consultor</th>}
-              <th className="px-4 py-3">Pedidos</th>
-              <th className="px-4 py-3">Total comprado</th>
-              <th className="px-4 py-3">Último pedido</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-white/10">
-            {linhas.map(({ client, pedidos, totalComprado, ultimoPedido, incompleto }) => {
-              return (
-                <tr key={client.id} className="hover:bg-zinc-50 dark:hover:bg-white/5">
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link
-                        href={`/clientes/${client.id}`}
-                        className="font-medium text-chumbo hover:underline dark:text-white"
-                      >
-                        {client.nome}
-                      </Link>
-                      {incompleto && (
-                        <span
-                          title="Faltam informações no perfil (pedidos, observações ou fotos)"
-                          className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-500/15 dark:text-amber-400"
-                        >
-                          ⚠ incompleto
-                        </span>
-                      )}
-                      <ContatoStatusSelect
-                        clientId={client.id}
-                        status={client.contato_status as ContatoStatus | null}
-                      />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                    {client.cnpj ? formatCnpj(client.cnpj) : formatCpf(client.cpf)}
-                  </td>
-                  <td className="px-4 py-3">
+      <div className="hidden items-center gap-3.5 px-4 text-xs font-semibold uppercase tracking-wide text-zinc-400 md:flex dark:text-zinc-500">
+        <span className="min-w-0 flex-1 pl-[50px]">Cliente</span>
+        <span className="w-28 shrink-0">Segmento</span>
+        <span className="w-24 shrink-0">Status</span>
+        {isAdmin && <span className="w-32 shrink-0">Consultor</span>}
+        <span className="w-16 shrink-0 text-right">Pedidos</span>
+        <span className="w-28 shrink-0 text-right">Total</span>
+        <span className="w-32 shrink-0 text-right">Último pedido</span>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {linhas.map(({ client, pedidos, totalComprado, ultimoPedido, incompleto }) => {
+          const urgencia = urgenciaPedido(client.status, ultimoPedido);
+          return (
+            <div
+              key={client.id}
+              className={`flex flex-wrap items-center gap-3.5 rounded-lg border border-chumbo/10 border-l-4 bg-white p-3 shadow-sm hover:bg-zinc-50 dark:border-white/10 dark:bg-chumbo-light dark:hover:bg-white/5 ${TOM_BORDA[urgencia.tom]}`}
+            >
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${corDoAvatar(client.nome)}`}
+              >
+                {iniciaisDoNome(client.nome)}
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href={`/clientes/${client.id}`}
+                    className="truncate font-medium text-chumbo hover:underline dark:text-white"
+                  >
+                    {client.nome}
+                  </Link>
+                  {incompleto && (
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[client.status as ClientStatus]}`}
-                    >
-                      {STATUS_LABEL[client.status as ClientStatus]}
-                    </span>
-                  </td>
-                  {isAdmin && (
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                      {consultorNomeById.get(client.consultant_id) ?? "—"}
-                    </td>
+                      title="Faltam informações no perfil (pedidos, observações ou fotos)"
+                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"
+                    />
                   )}
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{pedidos}</td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                    {formatCurrency(totalComprado)}
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                    {ultimoPedido ? formatDateOnly(ultimoPedido) : "—"}
-                  </td>
-                </tr>
-              );
-            })}
-            {linhas.length === 0 && (
-              <tr>
-                <td
-                  colSpan={isAdmin ? 7 : 6}
-                  className="px-4 py-8 text-center text-zinc-500"
+                  <ContatoStatusSelect
+                    clientId={client.id}
+                    status={client.contato_status as ContatoStatus | null}
+                  />
+                </div>
+                <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                  {client.cnpj ? formatCnpj(client.cnpj) : formatCpf(client.cpf)}
+                </p>
+              </div>
+
+              <span className="hidden w-28 shrink-0 truncate text-xs text-zinc-500 md:block dark:text-zinc-400">
+                {client.segmento || "—"}
+              </span>
+
+              <span className="w-24 shrink-0">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[client.status as ClientStatus]}`}
                 >
-                  Nenhum cliente encontrado.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  {STATUS_LABEL[client.status as ClientStatus]}
+                </span>
+              </span>
+
+              {isAdmin && (
+                <span className="hidden w-32 shrink-0 truncate text-xs text-zinc-500 md:block dark:text-zinc-400">
+                  {consultorNomeById.get(client.consultant_id) ?? "—"}
+                </span>
+              )}
+
+              <span className="w-16 shrink-0 text-right text-sm font-semibold tabular-nums text-chumbo dark:text-white">
+                {pedidos}
+              </span>
+              <span className="w-28 shrink-0 text-right text-sm tabular-nums text-zinc-600 dark:text-zinc-300">
+                {formatCurrency(totalComprado)}
+              </span>
+              <span className="w-32 shrink-0 text-right">
+                <span className={`block text-sm font-semibold ${TOM_TEXTO[urgencia.tom]}`}>
+                  {ultimoPedido ? urgencia.label : "—"}
+                </span>
+                {ultimoPedido && (
+                  <span className="block text-xs tabular-nums text-zinc-400">
+                    {formatDateOnly(ultimoPedido)}
+                  </span>
+                )}
+              </span>
+            </div>
+          );
+        })}
+        {linhas.length === 0 && (
+          <p className="rounded-lg border border-chumbo/10 bg-white p-8 text-center text-sm text-zinc-500 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+            Nenhum cliente encontrado.
+          </p>
+        )}
       </div>
     </div>
   );

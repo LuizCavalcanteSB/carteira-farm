@@ -32,6 +32,27 @@ export function diasDesde(dataISO: string) {
   return Math.floor(diffMs / (1000 * 60 * 60 * 24));
 }
 
+export type UrgenciaTom = "red" | "orange" | "amber" | "emerald" | "muted";
+
+/** Indicador visual de "cliente esfriando" pro Dashboard — tom mais quente
+ * quanto mais tempo sem pedido. Clientes inativos/prospecção não têm essa
+ * urgência (não é uma carteira ativa sendo negligenciada). */
+export function urgenciaPedido(
+  status: string,
+  ultimoPedido: string | null,
+): { tom: UrgenciaTom; label: string } {
+  if (status !== "ativo") return { tom: "muted", label: "—" };
+  if (!ultimoPedido) return { tom: "red", label: "Nunca comprou" };
+
+  const dias = diasDesde(ultimoPedido);
+  if (dias >= 180) return { tom: "red", label: `Há ${dias} dias` };
+  if (dias >= 90) return { tom: "orange", label: `Há ${dias} dias` };
+  if (dias >= 30) return { tom: "amber", label: `Há ${dias} dias` };
+  if (dias === 0) return { tom: "emerald", label: "Hoje" };
+  if (dias === 1) return { tom: "emerald", label: "Ontem" };
+  return { tom: "emerald", label: `Há ${dias} dias` };
+}
+
 export type AniversarioInfo = {
   proximaData: Date;
   diasRestantes: number;
