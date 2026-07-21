@@ -144,12 +144,16 @@ create table public.orders (
 
 create index orders_client_id_idx on public.orders (client_id);
 
--- 4. Observações (histórico de notas por cliente)
+-- 4. Observações (histórico de notas por cliente). `categoria` substitui a
+-- antiga observação livre por 3 listas estruturadas (contato realizado,
+-- pontos importantes, rapport); nulo = observação antiga, de antes dessa
+-- mudança, mantida só pra não perder histórico.
 create table public.client_notes (
   id uuid primary key default gen_random_uuid(),
   client_id uuid not null references public.clients (id) on delete cascade,
   author_id uuid not null references public.profiles (id),
   conteudo text not null,
+  categoria text check (categoria in ('contato_realizado', 'pontos_importantes', 'rapport')),
   created_at timestamptz not null default now()
 );
 

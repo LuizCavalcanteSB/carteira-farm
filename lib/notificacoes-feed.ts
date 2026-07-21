@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchAllRows } from "./paginate";
 import { limiteNotificacaoEntrega } from "./notifications";
 import { calcularProximoAniversario, diasDesde } from "./alertas";
+import { diasAte } from "./date";
 
 export type NotificationKind = "novo_contato" | "entrega" | "aniversario";
 
@@ -24,14 +25,9 @@ type RawItem = {
   diasRestantes: number;
 };
 
-function diasRestantesEntrega(dataISO: string) {
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const alvo = new Date(`${dataISO}T00:00:00`);
-  return Math.round((alvo.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function mensagemEntrega(dias: number) {
+// Exportadas: também usadas por lib/rotina.ts, pra manter o mesmo texto no
+// sino de notificações e na página Rotina.
+export function mensagemEntrega(dias: number) {
   if (dias < 0) {
     return `Pedido atrasado há ${Math.abs(dias)} dia${Math.abs(dias) === 1 ? "" : "s"}`;
   }
@@ -39,7 +35,7 @@ function mensagemEntrega(dias: number) {
   return `Pedido chega em ${dias} dia${dias === 1 ? "" : "s"}`;
 }
 
-function mensagemNovoContato(diasDesdeCriacao: number) {
+export function mensagemNovoContato(diasDesdeCriacao: number) {
   if (diasDesdeCriacao <= 0) return "Novo contato adicionado, aguardando abordagem";
   return `Aguardando primeiro contato há ${diasDesdeCriacao} dia${diasDesdeCriacao === 1 ? "" : "s"}`;
 }
@@ -95,7 +91,7 @@ async function calcularItensAtivos(
   });
 
   const itensEntrega: RawItem[] = (entregas ?? []).map((c) => {
-    const dias = diasRestantesEntrega(c.prazo_entrega as string);
+    const dias = diasAte(c.prazo_entrega as string);
     return {
       consultantId: c.consultant_id,
       clientId: c.id,

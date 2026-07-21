@@ -8,11 +8,11 @@ import {
   UserPlus,
   Upload,
   Users,
-  Bell,
   BellRing,
   Gift,
   Search,
   PhoneCall,
+  ListChecks,
   LogOut,
   Menu,
   X,
@@ -23,6 +23,7 @@ import { OwlLogo } from "./owl-logo";
 type NavItem = { href: string; label: string; icon: typeof LayoutDashboard };
 
 const NAV_ITEMS: NavItem[] = [
+  { href: "/rotina", label: "Rotina", icon: ListChecks },
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/clientes/novo", label: "Novo cliente", icon: UserPlus },
   { href: "/novos-contatos", label: "Novos contatos", icon: PhoneCall },
@@ -30,7 +31,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/mimos", label: "Cadastro de Mimo", icon: Gift },
   { href: "/busca-cnpj", label: "Busca CNPJ", icon: Search },
   { href: "/importar", label: "Importar planilha", icon: Upload },
-  { href: "/alertas", label: "Alertas", icon: Bell },
 ];
 
 function SidebarContent({

@@ -183,6 +183,9 @@ export default async function ClientPage({
       </div>
 
       <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+        <p className="mb-3 text-sm font-semibold text-chumbo dark:text-white">
+          Atividades do cliente
+        </p>
         <ClientTabs
           clientId={client.id}
           notes={notes ?? []}

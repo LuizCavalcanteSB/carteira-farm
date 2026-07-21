@@ -1,6 +1,16 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import {
+  Archive,
+  Handshake,
+  Image as ImageIcon,
+  Info,
+  Link as LinkIcon,
+  ListChecks,
+  PhoneCall,
+  Receipt,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   addActionItem,
@@ -20,6 +30,7 @@ import type {
   ClientActionItem,
   ClientLink,
   ClientNote,
+  NotaCategoria,
   Order,
   OrderPhoto,
 } from "@/lib/types";
@@ -30,15 +41,38 @@ import { contaNasEstatisticas } from "@/lib/orders";
 type NoteWithAuthor = ClientNote & { author: { nome: string } | null };
 type PhotoWithUrl = OrderPhoto & { url: string | null };
 
-const TABS = ["plano", "observacoes", "pedidos", "fotos", "links"] as const;
+const TABS = [
+  "plano",
+  "contato_realizado",
+  "pontos_importantes",
+  "rapport",
+  "antigas",
+  "pedidos",
+  "fotos",
+  "links",
+] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_LABEL: Record<Tab, string> = {
   plano: "Plano de ação",
-  observacoes: "Observações",
+  contato_realizado: "Contato realizado",
+  pontos_importantes: "Pontos importantes",
+  rapport: "Rapport",
+  antigas: "Observações antigas",
   pedidos: "Pedidos",
   fotos: "Fotos",
   links: "Links Bitrix",
+};
+
+const TAB_ICON: Record<Tab, typeof ListChecks> = {
+  plano: ListChecks,
+  contato_realizado: PhoneCall,
+  pontos_importantes: Info,
+  rapport: Handshake,
+  antigas: Archive,
+  pedidos: Receipt,
+  fotos: ImageIcon,
+  links: LinkIcon,
 };
 
 function formatCurrency(value: number) {
@@ -62,31 +96,60 @@ export function ClientTabs({
 }) {
   const [tab, setTab] = useState<Tab>("plano");
 
+  const notasAntigas = notes.filter((n) => !n.categoria);
+
   return (
     <div>
-      <div className="flex gap-1 border-b border-chumbo/10 dark:border-white/10">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium ${
-              tab === t
-                ? "border-b-2 border-brand text-chumbo dark:text-white"
-                : "text-zinc-500 hover:bg-zinc-50 hover:text-chumbo dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
-            }`}
-          >
-            {TAB_LABEL[t]}
-          </button>
-        ))}
+      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+        {TABS.map((t) => {
+          if (t === "antigas" && notasAntigas.length === 0) return null;
+          const Icon = TAB_ICON[t];
+          return (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                tab === t
+                  ? "bg-brand text-chumbo"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10"
+              }`}
+            >
+              <Icon size={15} />
+              {TAB_LABEL[t]}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="pt-4">
+      <div className="pt-5">
         {tab === "plano" && (
           <ActionPlanTab clientId={clientId} items={actionItems} />
         )}
-        {tab === "observacoes" && (
-          <NotesTab clientId={clientId} notes={notes} />
+        {tab === "contato_realizado" && (
+          <CategoryNotesTab
+            clientId={clientId}
+            categoria="contato_realizado"
+            placeholder="Ex: Liguei às 14h, cliente confirmou o pedido pra sexta"
+            notes={notes.filter((n) => n.categoria === "contato_realizado")}
+          />
         )}
+        {tab === "pontos_importantes" && (
+          <CategoryNotesTab
+            clientId={clientId}
+            categoria="pontos_importantes"
+            placeholder="Ex: Vai abrir uma filial em setembro"
+            notes={notes.filter((n) => n.categoria === "pontos_importantes")}
+          />
+        )}
+        {tab === "rapport" && (
+          <CategoryNotesTab
+            clientId={clientId}
+            categoria="rapport"
+            placeholder="Ex: Comentei sobre o time dele, jogo de sábado"
+            notes={notes.filter((n) => n.categoria === "rapport")}
+          />
+        )}
+        {tab === "antigas" && <LegacyNotesTab notes={notasAntigas} />}
         {tab === "pedidos" && <OrdersTab clientId={clientId} orders={orders} />}
         {tab === "fotos" && <PhotosTab clientId={clientId} photos={photos} />}
         {tab === "links" && <LinksTab clientId={clientId} links={links} />}
@@ -95,11 +158,15 @@ export function ClientTabs({
   );
 }
 
-function NotesTab({
+function CategoryNotesTab({
   clientId,
+  categoria,
+  placeholder,
   notes,
 }: {
   clientId: string;
+  categoria: NotaCategoria;
+  placeholder: string;
   notes: NoteWithAuthor[];
 }) {
   const [isPending, startTransition] = useTransition();
@@ -112,7 +179,7 @@ function NotesTab({
         ref={formRef}
         action={(formData) =>
           startTransition(async () => {
-            await addNote(clientId, formData);
+            await addNote(clientId, categoria, formData);
             formRef.current?.reset();
           })
         }
@@ -122,7 +189,7 @@ function NotesTab({
           name="conteudo"
           required
           rows={3}
-          placeholder="Adicionar observação sobre este cliente..."
+          placeholder={placeholder}
           className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
         />
         <button
@@ -130,7 +197,7 @@ function NotesTab({
           disabled={isPending}
           className="self-start rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
         >
-          {isPending ? "Salvando..." : "Adicionar observação"}
+          {isPending ? "Salvando..." : "Adicionar"}
         </button>
       </form>
 
@@ -165,7 +232,7 @@ function NotesTab({
                     onClick={() => {
                       if (
                         window.confirm(
-                          "Tem certeza que deseja excluir esta observação? Essa ação não pode ser desfeita.",
+                          "Tem certeza que deseja excluir esta anotação? Essa ação não pode ser desfeita.",
                         )
                       ) {
                         startTransition(() => deleteNota(clientId, note.id));
@@ -182,7 +249,36 @@ function NotesTab({
           ),
         )}
         {notes.length === 0 && (
-          <p className="text-sm text-zinc-500">Nenhuma observação ainda.</p>
+          <p className="text-sm text-zinc-500">Nada registrado ainda.</p>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+function LegacyNotesTab({ notes }: { notes: NoteWithAuthor[] }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        Observações de antes da mudança pra Contato realizado / Pontos
+        importantes / Rapport — mantidas aqui só como histórico, somente leitura.
+      </p>
+      <ul className="flex flex-col gap-3">
+        {notes.map((note) => (
+          <li
+            key={note.id}
+            className="rounded-md border border-chumbo/10 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5"
+          >
+            <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-200">
+              {note.conteudo}
+            </p>
+            <p className="mt-1 text-xs text-zinc-500">
+              {note.author?.nome ?? "—"} · {new Date(note.created_at).toLocaleString("pt-BR")}
+            </p>
+          </li>
+        ))}
+        {notes.length === 0 && (
+          <p className="text-sm text-zinc-500">Nenhuma observação antiga.</p>
         )}
       </ul>
     </div>

@@ -79,11 +79,14 @@ export type Order = {
   created_at: string;
 };
 
+export type NotaCategoria = "contato_realizado" | "pontos_importantes" | "rapport";
+
 export type ClientNote = {
   id: string;
   client_id: string;
   author_id: string;
   conteudo: string;
+  categoria: NotaCategoria | null;
   created_at: string;
 };
 

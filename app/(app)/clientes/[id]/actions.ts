@@ -2,8 +2,13 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import type { NotaCategoria } from "@/lib/types";
 
-export async function addNote(clientId: string, formData: FormData) {
+export async function addNote(
+  clientId: string,
+  categoria: NotaCategoria,
+  formData: FormData,
+) {
   const conteudo = String(formData.get("conteudo") ?? "").trim();
   if (!conteudo) return;
 
@@ -15,7 +20,7 @@ export async function addNote(clientId: string, formData: FormData) {
 
   await supabase
     .from("client_notes")
-    .insert({ client_id: clientId, author_id: user.id, conteudo });
+    .insert({ client_id: clientId, author_id: user.id, conteudo, categoria });
 
   revalidatePath(`/clientes/${clientId}`);
 }
