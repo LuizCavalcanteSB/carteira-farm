@@ -3,27 +3,38 @@
 import { useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  addActionItem,
   addLink,
   addNote,
   addOrder,
+  deleteActionItem,
   deleteLink,
   deleteNota,
   deleteOrder,
   deletePhoto,
   editarNota,
   registerPhoto,
+  toggleActionItem,
 } from "./actions";
-import type { ClientLink, ClientNote, Order, OrderPhoto } from "@/lib/types";
+import type {
+  ClientActionItem,
+  ClientLink,
+  ClientNote,
+  Order,
+  OrderPhoto,
+} from "@/lib/types";
 import { formatDateOnly } from "@/lib/date";
+import { comprimirImagem } from "@/lib/image-compress";
 import { contaNasEstatisticas } from "@/lib/orders";
 
 type NoteWithAuthor = ClientNote & { author: { nome: string } | null };
 type PhotoWithUrl = OrderPhoto & { url: string | null };
 
-const TABS = ["observacoes", "pedidos", "fotos", "links"] as const;
+const TABS = ["plano", "observacoes", "pedidos", "fotos", "links"] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_LABEL: Record<Tab, string> = {
+  plano: "Plano de ação",
   observacoes: "Observações",
   pedidos: "Pedidos",
   fotos: "Fotos",
@@ -40,14 +51,16 @@ export function ClientTabs({
   orders,
   photos,
   links,
+  actionItems,
 }: {
   clientId: string;
   notes: NoteWithAuthor[];
   orders: Order[];
   photos: PhotoWithUrl[];
   links: ClientLink[];
+  actionItems: ClientActionItem[];
 }) {
-  const [tab, setTab] = useState<Tab>("observacoes");
+  const [tab, setTab] = useState<Tab>("plano");
 
   return (
     <div>
@@ -68,6 +81,9 @@ export function ClientTabs({
       </div>
 
       <div className="pt-4">
+        {tab === "plano" && (
+          <ActionPlanTab clientId={clientId} items={actionItems} />
+        )}
         {tab === "observacoes" && (
           <NotesTab clientId={clientId} notes={notes} />
         )}
@@ -367,10 +383,11 @@ function PhotosTab({
     const supabase = createClient();
 
     for (const file of Array.from(files)) {
-      const path = `${clientId}/${Date.now()}-${file.name}`;
+      const arquivo = await comprimirImagem(file);
+      const path = `${clientId}/${Date.now()}-${arquivo.name}`;
       const { error: uploadError } = await supabase.storage
         .from("client-photos")
-        .upload(path, file);
+        .upload(path, arquivo);
 
       if (uploadError) {
         setError(uploadError.message);
@@ -523,6 +540,174 @@ function LinksTab({
           <p className="text-sm text-zinc-500">Nenhum link cadastrado ainda.</p>
         )}
       </ul>
+    </div>
+  );
+}
+
+function diasAteData(dataISO: string) {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const alvo = new Date(`${dataISO}T00:00:00`);
+  return Math.round((alvo.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function ActionPlanTab({
+  clientId,
+  items,
+}: {
+  clientId: string;
+  items: ClientActionItem[];
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const pendentes = items
+    .filter((item) => !item.concluido)
+    .sort((a, b) => a.data_prevista.localeCompare(b.data_prevista));
+  const concluidos = items
+    .filter((item) => item.concluido)
+    .sort((a, b) => b.data_prevista.localeCompare(a.data_prevista));
+
+  return (
+    <div className="flex flex-col gap-4">
+      <form
+        ref={formRef}
+        action={(formData) =>
+          startTransition(async () => {
+            const result = await addActionItem(clientId, formData);
+            if (result?.error) setError(result.error);
+            else {
+              setError(null);
+              formRef.current?.reset();
+            }
+          })
+        }
+        className="flex flex-wrap items-end gap-3"
+      >
+        <div className="flex flex-1 flex-col gap-1">
+          <label className="text-xs text-zinc-500 dark:text-zinc-400">Próxima ação</label>
+          <input
+            type="text"
+            name="descricao"
+            required
+            placeholder="Ex: Ligar pra renegociar prazo"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-zinc-500 dark:text-zinc-400">Data</label>
+          <input
+            type="date"
+            name="data_prevista"
+            defaultValue={new Date().toISOString().slice(0, 10)}
+            className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
+        >
+          {isPending ? "Salvando..." : "Adicionar ação"}
+        </button>
+      </form>
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+      <ul className="flex flex-col gap-2">
+        {pendentes.map((item) => {
+          const dias = diasAteData(item.data_prevista);
+          const badge =
+            dias < 0
+              ? "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-400"
+              : dias === 0
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400"
+                : "bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-400";
+          const label =
+            dias < 0
+              ? `Atrasado há ${Math.abs(dias)} dia${Math.abs(dias) === 1 ? "" : "s"}`
+              : dias === 0
+                ? "Hoje"
+                : `Em ${dias} dia${dias === 1 ? "" : "s"}`;
+
+          return (
+            <li
+              key={item.id}
+              className="flex items-center gap-3 rounded-md border border-chumbo/10 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5"
+            >
+              <button
+                onClick={() =>
+                  startTransition(() => {
+                    toggleActionItem(clientId, item.id, true);
+                  })
+                }
+                disabled={isPending}
+                title="Marcar como concluída"
+                className="h-5 w-5 shrink-0 rounded-full border-2 border-chumbo/30 hover:border-brand disabled:opacity-50 dark:border-white/30"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-zinc-700 dark:text-zinc-200">{item.descricao}</p>
+                <p className="text-xs text-zinc-500">{formatDateOnly(item.data_prevista)}</p>
+              </div>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${badge}`}>
+                {label}
+              </span>
+              <button
+                onClick={() => startTransition(() => deleteActionItem(clientId, item.id))}
+                disabled={isPending}
+                className="shrink-0 text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
+              >
+                Remover
+              </button>
+            </li>
+          );
+        })}
+        {pendentes.length === 0 && (
+          <p className="text-sm text-zinc-500">Nenhuma ação pendente. Bom trabalho!</p>
+        )}
+      </ul>
+
+      {concluidos.length > 0 && (
+        <details className="text-sm">
+          <summary className="cursor-pointer text-zinc-500 hover:text-chumbo dark:hover:text-white">
+            Concluídas ({concluidos.length})
+          </summary>
+          <ul className="mt-2 flex flex-col gap-2">
+            {concluidos.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center gap-3 rounded-md border border-chumbo/10 bg-zinc-50 p-3 opacity-60 dark:border-white/10 dark:bg-white/5"
+              >
+                <button
+                  onClick={() =>
+                    startTransition(() => {
+                      toggleActionItem(clientId, item.id, false);
+                    })
+                  }
+                  disabled={isPending}
+                  title="Marcar como pendente"
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand text-xs text-chumbo disabled:opacity-50"
+                >
+                  ✓
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-zinc-700 line-through dark:text-zinc-200">
+                    {item.descricao}
+                  </p>
+                  <p className="text-xs text-zinc-500">{formatDateOnly(item.data_prevista)}</p>
+                </div>
+                <button
+                  onClick={() => startTransition(() => deleteActionItem(clientId, item.id))}
+                  disabled={isPending}
+                  className="shrink-0 text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
+                >
+                  Remover
+                </button>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }

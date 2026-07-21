@@ -57,25 +57,30 @@ export default async function AlertasPage({
     clientQuery = clientQuery.eq("consultant_id", consultor);
   }
 
-  const { data: clients } = await fetchAllRows((from, to) =>
-    clientQuery.range(from, to),
-  );
-  const clientIds = new Set((clients ?? []).map((c) => c.id));
+  // Mesmos filtros da query de clients acima, aplicados direto na view — em
+  // vez de baixar a client_stats inteira (todos os clientes, de todos os
+  // consultores) e descartar depois em JS o que não interessa (sem .in()
+  // por lista de client_id: uma lista grande de UUIDs já zerou o dashboard
+  // uma vez, ver app/(app)/page.tsx).
+  let statsQuery = supabase
+    .from("client_stats")
+    .select("client_id, ultimo_pedido")
+    .eq("na_carteira", true);
 
-  // Sem .in() por lista de client_id — a mesma consulta filtrada por URL já
-  // zerou o dashboard uma vez com listas grandes (ver app/(app)/page.tsx). A
-  // RLS de client_stats já escopa pra só o que este usuário pode ver.
-  //
+  if (isAdmin && consultor) {
+    statsQuery = statsQuery.eq("consultant_id", consultor);
+  }
+
   // Busca paginada: acima do limite padrão de linhas do PostgREST (1000),
-  // um único .select() sem range corta o restante silenciosamente.
-  const { data: allStats } = await fetchAllRows((from, to) =>
-    supabase.from("client_stats").select("client_id, ultimo_pedido").range(from, to),
-  );
+  // um único .select() sem range corta o restante silenciosamente. As duas
+  // buscas não dependem uma da outra, então rodam em paralelo.
+  const [{ data: clients }, { data: allStats }] = await Promise.all([
+    fetchAllRows((from, to) => clientQuery.range(from, to)),
+    fetchAllRows((from, to) => statsQuery.range(from, to)),
+  ]);
 
   const ultimoPedidoByClient = new Map(
-    (allStats ?? [])
-      .filter((s) => clientIds.has(s.client_id))
-      .map((s) => [s.client_id, s.ultimo_pedido]),
+    (allStats ?? []).map((s) => [s.client_id, s.ultimo_pedido]),
   );
 
   const linhasPedidos = (clients ?? [])

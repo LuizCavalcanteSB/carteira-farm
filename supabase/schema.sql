@@ -178,6 +178,20 @@ create table public.client_links (
 
 create index client_links_client_id_idx on public.client_links (client_id);
 
+-- 6b. Plano de ação: lembretes de follow-up comercial datados, sem depender
+-- de um pedido em andamento (diferente de prazo_entrega, que é sobre um
+-- pedido já fechado). Ex: "ligar em 3 dias", "levar catálogo novo".
+create table public.client_action_items (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references public.clients (id) on delete cascade,
+  descricao text not null,
+  data_prevista date not null default current_date,
+  concluido boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index client_action_items_client_id_idx on public.client_action_items (client_id);
+
 -- 7. Metas mensais de vendas por consultor
 create table public.metas_mensais (
   id uuid primary key default gen_random_uuid(),
@@ -273,7 +287,14 @@ select
   greatest(
     c.historico_ultima_compra,
     max(o.data_pedido) filter (where o.data_pedido >= date '2026-07-11')
-  ) as ultimo_pedido
+  ) as ultimo_pedido,
+  -- Colunas abaixo existem só pra permitir filtrar/agregar dentro da própria
+  -- view (dashboard e alertas), em vez de baixar a tabela inteira de
+  -- client_notes/order_photos pro app só pra checar "tem pelo menos 1?".
+  c.na_carteira,
+  c.consultant_id,
+  exists (select 1 from public.client_notes n where n.client_id = c.id) as tem_observacao,
+  exists (select 1 from public.order_photos p where p.client_id = c.id) as tem_foto
 from public.clients c
 left join public.orders o on o.client_id = c.id
 group by c.id;
@@ -288,6 +309,7 @@ alter table public.orders enable row level security;
 alter table public.client_notes enable row level security;
 alter table public.order_photos enable row level security;
 alter table public.client_links enable row level security;
+alter table public.client_action_items enable row level security;
 alter table public.metas_mensais enable row level security;
 alter table public.cnpj_pesquisas enable row level security;
 alter table public.mimos enable row level security;
@@ -455,6 +477,24 @@ create policy "links_all_own_or_admin"
     exists (
       select 1 from public.clients c
       where c.id = client_links.client_id
+        and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
+    )
+  );
+
+create policy "action_items_all_own_or_admin"
+  on public.client_action_items for all
+  to authenticated
+  using (
+    exists (
+      select 1 from public.clients c
+      where c.id = client_action_items.client_id
+        and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.clients c
+      where c.id = client_action_items.client_id
         and (c.consultant_id = auth.uid() or public.current_role() = 'admin')
     )
   );

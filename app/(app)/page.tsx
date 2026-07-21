@@ -83,54 +83,33 @@ export default async function DashboardPage({
     query = query.eq("consultant_id", consultor);
   }
 
+  // Mesmos filtros de carteira/consultor aplicados direto na view — em vez
+  // de baixar client_notes/order_photos inteiras (todos os clientes, de
+  // todos os consultores) só pra checar "tem pelo menos 1?", a view já traz
+  // isso pronto em tem_observacao/tem_foto (ver supabase/schema.sql). Não
+  // repete o filtro de busca (q): os totais precisam cobrir toda a carteira
+  // do consultor, não só os resultados filtrados por nome/CNPJ.
+  let statsQuery = supabase
+    .from("client_stats")
+    .select("client_id, pedidos, total_comprado, ultimo_pedido, tem_observacao, tem_foto")
+    .eq("na_carteira", true);
+
+  if (isAdmin && consultor) {
+    statsQuery = statsQuery.eq("consultant_id", consultor);
+  }
+
   // fetchAllRows: mesma razão de sempre — sem paginação, o PostgREST corta
   // silenciosamente acima de 1000 linhas, travando a lista/contadores do
-  // dashboard num teto de 1000 clientes mesmo com mais cadastrados.
-  const { data: clients } = await fetchAllRows((from, to) =>
-    query.range(from, to),
-  );
-
-  // Sem filtro por client_id aqui de propósito: a RLS de client_stats/
-  // client_notes/order_photos já escopa pra só o que este usuário pode ver
-  // (própria carteira, ou tudo se admin). Filtrar com .in() numa lista de
-  // dezenas/centenas de UUIDs gera uma query string enorme que pode falhar.
-  //
-  // Busca paginada (fetchAllRows) em vez de um único .select() sem range:
-  // o PostgREST tem um limite padrão de linhas por resposta (1000) — acima
-  // disso o restante é cortado silenciosamente, fazendo clientes aleatórios
-  // aparecerem com pedidos/observações/fotos zerados sem nenhum dado ter
-  // sido realmente apagado.
-  const [
-    { data: stats, error: statsError },
-    { data: notes, error: notesError },
-    { data: photos, error: photosError },
-  ] = await Promise.all([
-    fetchAllRows((from, to) =>
-      supabase
-        .from("client_stats")
-        .select("client_id, pedidos, total_comprado, ultimo_pedido")
-        .range(from, to),
-    ),
-    fetchAllRows((from, to) =>
-      supabase.from("client_notes").select("client_id").range(from, to),
-    ),
-    fetchAllRows((from, to) =>
-      supabase.from("order_photos").select("client_id").range(from, to),
-    ),
+  // dashboard num teto de 1000 clientes mesmo com mais cadastrados. As duas
+  // buscas não dependem uma da outra, então rodam em paralelo.
+  const [{ data: clients }, { data: stats, error: statsError }] = await Promise.all([
+    fetchAllRows((from, to) => query.range(from, to)),
+    fetchAllRows((from, to) => statsQuery.range(from, to)),
   ]);
 
-  const statsErro = statsError || notesError || photosError;
+  const statsErro = statsError;
 
   const statsByClient = new Map((stats ?? []).map((s) => [s.client_id, s]));
-
-  const notesCountByClient = new Map<string, number>();
-  for (const n of notes ?? []) {
-    notesCountByClient.set(n.client_id, (notesCountByClient.get(n.client_id) ?? 0) + 1);
-  }
-  const photosCountByClient = new Map<string, number>();
-  for (const p of photos ?? []) {
-    photosCountByClient.set(p.client_id, (photosCountByClient.get(p.client_id) ?? 0) + 1);
-  }
 
   const consultorNomeById = new Map(
     (consultores ?? []).map((c) => [c.id, c.nome]),
@@ -144,9 +123,7 @@ export default async function DashboardPage({
       totalComprado: stat?.total_comprado ?? 0,
       ultimoPedido: stat?.ultimo_pedido ?? null,
       incompleto:
-        (stat?.pedidos ?? 0) === 0 ||
-        (notesCountByClient.get(client.id) ?? 0) === 0 ||
-        (photosCountByClient.get(client.id) ?? 0) === 0,
+        (stat?.pedidos ?? 0) === 0 || !stat?.tem_observacao || !stat?.tem_foto,
     };
   });
 

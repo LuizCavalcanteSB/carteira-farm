@@ -111,3 +111,12 @@ export type Mimo = {
   data_envio: string | null;
   created_at: string;
 };
+
+export type ClientActionItem = {
+  id: string;
+  client_id: string;
+  descricao: string;
+  data_prevista: string;
+  concluido: boolean;
+  created_at: string;
+};

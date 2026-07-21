@@ -93,6 +93,48 @@ export async function deletePhoto(clientId: string, photoId: string, storagePath
   revalidatePath(`/clientes/${clientId}`);
 }
 
+export async function addActionItem(clientId: string, formData: FormData) {
+  const descricao = String(formData.get("descricao") ?? "").trim();
+  if (!descricao) return { error: "Descreva a ação a fazer." };
+
+  const dataPrevista = String(formData.get("data_prevista") ?? "").trim();
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("client_action_items").insert({
+    client_id: clientId,
+    descricao,
+    data_prevista: dataPrevista || undefined,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  return { error: null };
+}
+
+export async function toggleActionItem(
+  clientId: string,
+  itemId: string,
+  concluido: boolean,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("client_action_items")
+    .update({ concluido })
+    .eq("id", itemId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/clientes/${clientId}`);
+  return { error: null };
+}
+
+export async function deleteActionItem(clientId: string, itemId: string) {
+  const supabase = await createClient();
+  await supabase.from("client_action_items").delete().eq("id", itemId);
+  revalidatePath(`/clientes/${clientId}`);
+}
+
 export async function addLink(clientId: string, formData: FormData) {
   const url = String(formData.get("url") ?? "").trim();
   if (!url) return { error: "Informe a URL do link." };

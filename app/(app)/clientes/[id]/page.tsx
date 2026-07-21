@@ -47,6 +47,7 @@ export default async function ClientPage({
     { data: orders },
     { data: photos },
     { data: links },
+    { data: actionItems },
     { data: consultor },
   ] = await Promise.all([
     supabase.from("profiles").select("role").eq("id", user!.id).single(),
@@ -71,6 +72,11 @@ export default async function ClientPage({
       .select("*")
       .eq("client_id", id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("client_action_items")
+      .select("*")
+      .eq("client_id", id)
+      .order("data_prevista", { ascending: true }),
     supabase.from("profiles").select("nome").eq("id", client.consultant_id).single(),
   ]);
 
@@ -183,6 +189,7 @@ export default async function ClientPage({
           orders={orders ?? []}
           photos={photosWithUrls}
           links={links ?? []}
+          actionItems={actionItems ?? []}
         />
       </div>
     </div>
