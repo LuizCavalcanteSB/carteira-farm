@@ -1,16 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import {
-  Archive,
-  Handshake,
-  Image as ImageIcon,
-  Info,
-  Link as LinkIcon,
-  ListChecks,
-  PhoneCall,
-  Receipt,
-} from "lucide-react";
+import { Handshake, Info, ListChecks, PhoneCall } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   addActionItem,
@@ -41,38 +32,13 @@ import { contaNasEstatisticas } from "@/lib/orders";
 type NoteWithAuthor = ClientNote & { author: { nome: string } | null };
 type PhotoWithUrl = OrderPhoto & { url: string | null };
 
-const TABS = [
-  "plano",
-  "contato_realizado",
-  "pontos_importantes",
-  "rapport",
-  "antigas",
-  "pedidos",
-  "fotos",
-  "links",
-] as const;
-type Tab = (typeof TABS)[number];
+const MAIN_TABS = ["atividades", "registros", "antigas"] as const;
+type MainTab = (typeof MAIN_TABS)[number];
 
-const TAB_LABEL: Record<Tab, string> = {
-  plano: "Plano de ação",
-  contato_realizado: "Contato realizado",
-  pontos_importantes: "Pontos importantes",
-  rapport: "Rapport",
+const MAIN_TAB_LABEL: Record<MainTab, string> = {
+  atividades: "Atividades do cliente",
+  registros: "Pedidos, fotos e links Bitrix",
   antigas: "Observações antigas",
-  pedidos: "Pedidos",
-  fotos: "Fotos",
-  links: "Links Bitrix",
-};
-
-const TAB_ICON: Record<Tab, typeof ListChecks> = {
-  plano: ListChecks,
-  contato_realizado: PhoneCall,
-  pontos_importantes: Info,
-  rapport: Handshake,
-  antigas: Archive,
-  pedidos: Receipt,
-  fotos: ImageIcon,
-  links: LinkIcon,
 };
 
 function formatCurrency(value: number) {
@@ -94,165 +60,424 @@ export function ClientTabs({
   links: ClientLink[];
   actionItems: ClientActionItem[];
 }) {
-  const [tab, setTab] = useState<Tab>("plano");
+  const [tab, setTab] = useState<MainTab>("atividades");
 
   const notasAntigas = notes.filter((n) => !n.categoria);
+  const notasCategorizadas = notes.filter(
+    (n): n is NoteWithAuthor & { categoria: NotaCategoria } => !!n.categoria,
+  );
+
+  const abasVisiveis = MAIN_TABS.filter((t) => t !== "antigas" || notasAntigas.length > 0);
 
   return (
-    <div>
-      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-        {TABS.map((t) => {
-          if (t === "antigas" && notasAntigas.length === 0) return null;
-          const Icon = TAB_ICON[t];
-          return (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
-                tab === t
-                  ? "bg-brand text-chumbo"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10"
-              }`}
-            >
-              <Icon size={15} />
-              {TAB_LABEL[t]}
-            </button>
-          );
-        })}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-2">
+        {abasVisiveis.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+              tab === t
+                ? "bg-brand text-chumbo"
+                : "bg-white text-zinc-600 shadow-sm hover:bg-zinc-100 dark:bg-chumbo-light dark:text-zinc-300 dark:hover:bg-white/10"
+            }`}
+          >
+            {MAIN_TAB_LABEL[t]}
+          </button>
+        ))}
       </div>
 
-      <div className="pt-5">
-        {tab === "plano" && (
-          <ActionPlanTab clientId={clientId} items={actionItems} />
-        )}
-        {tab === "contato_realizado" && (
-          <CategoryNotesTab
-            clientId={clientId}
-            categoria="contato_realizado"
-            placeholder="Ex: Liguei às 14h, cliente confirmou o pedido pra sexta"
-            notes={notes.filter((n) => n.categoria === "contato_realizado")}
-          />
-        )}
-        {tab === "pontos_importantes" && (
-          <CategoryNotesTab
-            clientId={clientId}
-            categoria="pontos_importantes"
-            placeholder="Ex: Vai abrir uma filial em setembro"
-            notes={notes.filter((n) => n.categoria === "pontos_importantes")}
-          />
-        )}
-        {tab === "rapport" && (
-          <CategoryNotesTab
-            clientId={clientId}
-            categoria="rapport"
-            placeholder="Ex: Comentei sobre o time dele, jogo de sábado"
-            notes={notes.filter((n) => n.categoria === "rapport")}
-          />
-        )}
-        {tab === "antigas" && <LegacyNotesTab notes={notasAntigas} />}
-        {tab === "pedidos" && <OrdersTab clientId={clientId} orders={orders} />}
-        {tab === "fotos" && <PhotosTab clientId={clientId} photos={photos} />}
-        {tab === "links" && <LinksTab clientId={clientId} links={links} />}
-      </div>
+      {tab === "atividades" && (
+        <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+          <ActivityFeed clientId={clientId} notes={notasCategorizadas} actionItems={actionItems} />
+        </div>
+      )}
+
+      {tab === "registros" && (
+        <div className="flex flex-col gap-4">
+          <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+            <h3 className="mb-3 text-sm font-semibold text-chumbo dark:text-white">
+              Pedidos <span className="font-normal text-zinc-400">{orders.length}</span>
+            </h3>
+            <OrdersTab clientId={clientId} orders={orders} />
+          </div>
+          <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+            <h3 className="mb-3 text-sm font-semibold text-chumbo dark:text-white">
+              Fotos <span className="font-normal text-zinc-400">{photos.length}</span>
+            </h3>
+            <PhotosTab clientId={clientId} photos={photos} />
+          </div>
+          <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+            <h3 className="mb-3 text-sm font-semibold text-chumbo dark:text-white">
+              Links Bitrix <span className="font-normal text-zinc-400">{links.length}</span>
+            </h3>
+            <LinksTab clientId={clientId} links={links} />
+          </div>
+        </div>
+      )}
+
+      {tab === "antigas" && (
+        <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
+          <LegacyNotesTab notes={notasAntigas} />
+        </div>
+      )}
     </div>
   );
 }
 
-function CategoryNotesTab({
+// ============================================================
+// Atividades: feed combinado de Plano de ação + Contato realizado +
+// Pontos importantes + Rapport, sempre visível (sem precisar trocar de aba).
+// ============================================================
+
+type FeedKind = "plano_acao" | NotaCategoria;
+
+const FEED_META: Record<
+  FeedKind,
+  { label: string; icon: typeof ListChecks; badge: string; borda: string; placeholder?: string }
+> = {
+  plano_acao: {
+    label: "Plano de ação",
+    icon: ListChecks,
+    badge: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400",
+    borda: "border-l-amber-500",
+  },
+  contato_realizado: {
+    label: "Contato realizado",
+    icon: PhoneCall,
+    badge: "bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-400",
+    borda: "border-l-sky-500",
+    placeholder: "Ex: Liguei às 14h, cliente confirmou o pedido pra sexta",
+  },
+  pontos_importantes: {
+    label: "Pontos importantes",
+    icon: Info,
+    badge: "bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-400",
+    borda: "border-l-violet-500",
+    placeholder: "Ex: Vai abrir uma filial em setembro",
+  },
+  rapport: {
+    label: "Rapport",
+    icon: Handshake,
+    badge: "bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-400",
+    borda: "border-l-rose-500",
+    placeholder: "Ex: Comentei sobre o time dele, jogo de sábado",
+  },
+};
+
+const FEED_CATEGORIAS = Object.keys(FEED_META) as FeedKind[];
+
+type FeedEntry =
+  | { kind: "plano_acao"; sortKey: number; acao: ClientActionItem }
+  | { kind: NotaCategoria; sortKey: number; nota: NoteWithAuthor };
+
+function ActivityFeed({
   clientId,
-  categoria,
-  placeholder,
   notes,
+  actionItems,
 }: {
   clientId: string;
-  categoria: NotaCategoria;
-  placeholder: string;
-  notes: NoteWithAuthor[];
+  notes: (NoteWithAuthor & { categoria: NotaCategoria })[];
+  actionItems: ClientActionItem[];
 }) {
-  const [isPending, startTransition] = useTransition();
-  const formRef = useRef<HTMLFormElement>(null);
+  const [filtro, setFiltro] = useState<FeedKind | "todos">("todos");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const entradas: FeedEntry[] = [
+    ...actionItems.map((acao) => ({
+      kind: "plano_acao" as const,
+      sortKey: new Date(`${acao.data_prevista}T00:00:00`).getTime(),
+      acao,
+    })),
+    ...notes.map((nota) => ({
+      kind: nota.categoria,
+      sortKey: new Date(nota.created_at).getTime(),
+      nota,
+    })),
+  ].sort((a, b) => b.sortKey - a.sortKey);
+
+  const contagens: Partial<Record<FeedKind, number>> = {};
+  for (const e of entradas) contagens[e.kind] = (contagens[e.kind] ?? 0) + 1;
+
+  const filtradas = filtro === "todos" ? entradas : entradas.filter((e) => e.kind === filtro);
 
   return (
     <div className="flex flex-col gap-4">
-      <form
-        ref={formRef}
-        action={(formData) =>
-          startTransition(async () => {
-            await addNote(clientId, categoria, formData);
-            formRef.current?.reset();
-          })
-        }
-        className="flex flex-col gap-2"
-      >
-        <textarea
-          name="conteudo"
-          required
-          rows={3}
-          placeholder={placeholder}
-          className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
-        />
+      <div className="flex flex-wrap gap-2">
         <button
-          type="submit"
-          disabled={isPending}
-          className="self-start rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
+          onClick={() => setFiltro("todos")}
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            filtro === "todos"
+              ? "bg-chumbo text-white dark:bg-white dark:text-chumbo"
+              : "border border-chumbo/20 text-zinc-600 hover:bg-zinc-100 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-white/10"
+          }`}
         >
-          {isPending ? "Salvando..." : "Adicionar"}
+          Tudo <span className="opacity-70">({entradas.length})</span>
         </button>
-      </form>
+        {FEED_CATEGORIAS.map((k) => (
+          <button
+            key={k}
+            onClick={() => setFiltro(k)}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${
+              filtro === k
+                ? "bg-chumbo text-white dark:bg-white dark:text-chumbo"
+                : "border border-chumbo/20 text-zinc-600 hover:bg-zinc-100 dark:border-white/20 dark:text-zinc-300 dark:hover:bg-white/10"
+            }`}
+          >
+            {FEED_META[k].label} <span className="opacity-70">({contagens[k] ?? 0})</span>
+          </button>
+        ))}
+      </div>
 
-      <ul className="flex flex-col gap-3">
-        {notes.map((note) =>
-          editingId === note.id ? (
-            <NotaEditor
-              key={note.id}
-              clientId={clientId}
-              note={note}
-              onCancel={() => setEditingId(null)}
-              onSaved={() => setEditingId(null)}
-            />
-          ) : (
-            <li key={note.id} className="rounded-md border border-chumbo/10 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5">
-              <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-200">
-                {note.conteudo}
-              </p>
-              <div className="mt-1 flex items-center justify-between">
-                <p className="text-xs text-zinc-500">
-                  {note.author?.nome ?? "—"} ·{" "}
-                  {new Date(note.created_at).toLocaleString("pt-BR")}
+      <QuickAddForm clientId={clientId} />
+
+      <ul className="flex flex-col gap-2">
+        {filtradas.map((entrada) => {
+          if (entrada.kind === "plano_acao") {
+            return (
+              <PlanoAcaoItem
+                key={`plano:${entrada.acao.id}`}
+                clientId={clientId}
+                item={entrada.acao}
+              />
+            );
+          }
+          const nota = entrada.nota;
+          const meta = FEED_META[entrada.kind];
+          if (editingId === nota.id) {
+            return (
+              <NotaEditor
+                key={nota.id}
+                clientId={clientId}
+                note={nota}
+                onCancel={() => setEditingId(null)}
+                onSaved={() => setEditingId(null)}
+              />
+            );
+          }
+          return (
+            <li
+              key={nota.id}
+              className={`flex gap-3 rounded-md border border-chumbo/10 border-l-4 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5 ${meta.borda}`}
+            >
+              <span className={`shrink-0 rounded-full px-1.5 py-1 ${meta.badge}`}>
+                <meta.icon size={14} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  {meta.label}
                 </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setEditingId(note.id)}
-                    className="text-xs text-chumbo hover:underline dark:text-white"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "Tem certeza que deseja excluir esta anotação? Essa ação não pode ser desfeita.",
-                        )
-                      ) {
-                        startTransition(() => deleteNota(clientId, note.id));
-                      }
-                    }}
-                    disabled={isPending}
-                    className="text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
-                  >
-                    Remover
-                  </button>
+                <p className="whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-200">
+                  {nota.conteudo}
+                </p>
+                <div className="mt-1 flex items-center justify-between">
+                  <p className="text-xs text-zinc-500">
+                    {nota.author?.nome ?? "—"} · {new Date(nota.created_at).toLocaleString("pt-BR")}
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setEditingId(nota.id)}
+                      className="text-xs text-chumbo hover:underline dark:text-white"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Tem certeza que deseja excluir esta anotação? Essa ação não pode ser desfeita.",
+                          )
+                        ) {
+                          startTransition(() => deleteNota(clientId, nota.id));
+                        }
+                      }}
+                      disabled={isPending}
+                      className="text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
+                    >
+                      Remover
+                    </button>
+                  </div>
                 </div>
               </div>
             </li>
-          ),
-        )}
-        {notes.length === 0 && (
+          );
+        })}
+        {filtradas.length === 0 && (
           <p className="text-sm text-zinc-500">Nada registrado ainda.</p>
         )}
       </ul>
     </div>
+  );
+}
+
+function QuickAddForm({ clientId }: { clientId: string }) {
+  const [categoria, setCategoria] = useState<FeedKind>("plano_acao");
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  return (
+    <div className="rounded-md border border-chumbo/10 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5">
+      <select
+        value={categoria}
+        onChange={(e) => setCategoria(e.target.value as FeedKind)}
+        className="mb-2 rounded-md border border-chumbo/20 bg-white px-2 py-1.5 text-xs font-medium text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+      >
+        {FEED_CATEGORIAS.map((k) => (
+          <option key={k} value={k}>
+            {FEED_META[k].label}
+          </option>
+        ))}
+      </select>
+
+      {categoria === "plano_acao" ? (
+        <form
+          ref={formRef}
+          action={(formData) =>
+            startTransition(async () => {
+              const result = await addActionItem(clientId, formData);
+              if (result?.error) setError(result.error);
+              else {
+                setError(null);
+                formRef.current?.reset();
+              }
+            })
+          }
+          className="flex flex-col gap-2"
+        >
+          <input
+            type="text"
+            name="objetivo"
+            placeholder="Objetivo (opcional) — Ex: Reativar cliente parado há 3 meses"
+            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+          />
+          <div className="flex flex-wrap items-end gap-2">
+            <input
+              type="text"
+              name="descricao"
+              required
+              placeholder="O que fazer — Ex: Ligar oferecendo desconto"
+              className="min-w-[180px] flex-1 rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+            />
+            <input
+              type="date"
+              name="data_prevista"
+              required
+              defaultValue={new Date().toISOString().slice(0, 10)}
+              className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+            />
+            <button
+              type="submit"
+              disabled={isPending}
+              className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
+            >
+              {isPending ? "Salvando..." : "Adicionar"}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <form
+          ref={formRef}
+          action={(formData) =>
+            startTransition(async () => {
+              await addNote(clientId, categoria, formData);
+              formRef.current?.reset();
+            })
+          }
+          className="flex flex-col gap-2 sm:flex-row"
+        >
+          <input
+            type="text"
+            name="conteudo"
+            required
+            placeholder={FEED_META[categoria].placeholder}
+            className="min-w-0 flex-1 rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
+          />
+          <button
+            type="submit"
+            disabled={isPending}
+            className="shrink-0 rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
+          >
+            {isPending ? "Salvando..." : "Adicionar"}
+          </button>
+        </form>
+      )}
+      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+    </div>
+  );
+}
+
+function PlanoAcaoItem({
+  clientId,
+  item,
+}: {
+  clientId: string;
+  item: ClientActionItem;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const meta = FEED_META.plano_acao;
+  const dias = diasAte(item.data_prevista);
+  const tag =
+    dias < 0
+      ? "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-400"
+      : dias === 0
+        ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400"
+        : "bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-400";
+  const label =
+    dias < 0
+      ? `Atrasado há ${Math.abs(dias)} dia${Math.abs(dias) === 1 ? "" : "s"}`
+      : dias === 0
+        ? "Hoje"
+        : `Em ${dias} dia${dias === 1 ? "" : "s"}`;
+
+  return (
+    <li
+      className={`flex items-center gap-3 rounded-md border border-chumbo/10 border-l-4 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5 ${meta.borda} ${item.concluido ? "opacity-55" : ""}`}
+    >
+      <button
+        onClick={() =>
+          startTransition(() => {
+            toggleActionItem(clientId, item.id, !item.concluido);
+          })
+        }
+        disabled={isPending}
+        title={item.concluido ? "Marcar como pendente" : "Marcar como concluída"}
+        className={
+          item.concluido
+            ? "flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand text-xs text-chumbo disabled:opacity-50"
+            : "h-5 w-5 shrink-0 rounded-full border-2 border-chumbo/30 hover:border-brand disabled:opacity-50 dark:border-white/30"
+        }
+      >
+        {item.concluido ? "✓" : ""}
+      </button>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          {meta.label}
+        </p>
+        {item.objetivo && (
+          <p
+            className={`text-xs font-semibold text-chumbo dark:text-white ${item.concluido ? "line-through" : ""}`}
+          >
+            {item.objetivo}
+          </p>
+        )}
+        <p className={`text-sm text-zinc-700 dark:text-zinc-200 ${item.concluido ? "line-through" : ""}`}>
+          {item.descricao}
+        </p>
+        <p className="text-xs text-zinc-500">Até {formatDateOnly(item.data_prevista)}</p>
+      </div>
+      {!item.concluido && (
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${tag}`}>{label}</span>
+      )}
+      <button
+        onClick={() => startTransition(() => deleteActionItem(clientId, item.id))}
+        disabled={isPending}
+        className="shrink-0 text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
+      >
+        Remover
+      </button>
+    </li>
   );
 }
 
@@ -364,7 +589,7 @@ function OrdersTab({
             }
           })
         }
-        className="flex flex-wrap items-end gap-3"
+        className="flex flex-wrap items-end gap-3 border-b border-chumbo/10 pb-4 dark:border-white/10"
       >
         <div className="flex flex-col gap-1">
           <label className="text-xs text-zinc-500 dark:text-zinc-400">Data do pedido</label>
@@ -499,7 +724,7 @@ function PhotosTab({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
+      <div className="border-b border-chumbo/10 pb-4 dark:border-white/10">
         <input
           ref={inputRef}
           type="file"
@@ -577,7 +802,7 @@ function LinksTab({
             }
           })
         }
-        className="flex flex-wrap items-end gap-3"
+        className="flex flex-wrap items-end gap-3 border-b border-chumbo/10 pb-4 dark:border-white/10"
       >
         <div className="flex flex-1 flex-col gap-1">
           <label className="text-xs text-zinc-500 dark:text-zinc-400">URL do Bitrix</label>
@@ -636,187 +861,6 @@ function LinksTab({
           <p className="text-sm text-zinc-500">Nenhum link cadastrado ainda.</p>
         )}
       </ul>
-    </div>
-  );
-}
-
-function ActionPlanTab({
-  clientId,
-  items,
-}: {
-  clientId: string;
-  items: ClientActionItem[];
-}) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const pendentes = items
-    .filter((item) => !item.concluido)
-    .sort((a, b) => a.data_prevista.localeCompare(b.data_prevista));
-  const concluidos = items
-    .filter((item) => item.concluido)
-    .sort((a, b) => b.data_prevista.localeCompare(a.data_prevista));
-
-  return (
-    <div className="flex flex-col gap-4">
-      <form
-        ref={formRef}
-        action={(formData) =>
-          startTransition(async () => {
-            const result = await addActionItem(clientId, formData);
-            if (result?.error) setError(result.error);
-            else {
-              setError(null);
-              formRef.current?.reset();
-            }
-          })
-        }
-        className="flex flex-col gap-3"
-      >
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-zinc-500 dark:text-zinc-400">Objetivo (opcional)</label>
-          <input
-            type="text"
-            name="objetivo"
-            placeholder="Ex: Reativar cliente parado há 3 meses"
-            className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
-          />
-        </div>
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-1 flex-col gap-1">
-            <label className="text-xs text-zinc-500 dark:text-zinc-400">O que fazer</label>
-            <input
-              type="text"
-              name="descricao"
-              required
-              placeholder="Ex: Ligar oferecendo desconto de reativação"
-              className="w-full rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-zinc-500 dark:text-zinc-400">Até quando</label>
-            <input
-              type="date"
-              name="data_prevista"
-              required
-              defaultValue={new Date().toISOString().slice(0, 10)}
-              className="rounded-md border border-chumbo/20 bg-white px-3 py-2 text-sm text-chumbo focus:border-chumbo focus:outline-none dark:border-white/20 dark:bg-chumbo-light dark:text-white dark:focus:border-brand"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={isPending}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-chumbo hover:bg-brand-dark disabled:opacity-50"
-          >
-            {isPending ? "Salvando..." : "Adicionar ação"}
-          </button>
-        </div>
-      </form>
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-
-      <ul className="flex flex-col gap-2">
-        {pendentes.map((item) => {
-          const dias = diasAte(item.data_prevista);
-          const badge =
-            dias < 0
-              ? "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-400"
-              : dias === 0
-                ? "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-400"
-                : "bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-400";
-          const label =
-            dias < 0
-              ? `Atrasado há ${Math.abs(dias)} dia${Math.abs(dias) === 1 ? "" : "s"}`
-              : dias === 0
-                ? "Hoje"
-                : `Em ${dias} dia${dias === 1 ? "" : "s"}`;
-
-          return (
-            <li
-              key={item.id}
-              className="flex items-center gap-3 rounded-md border border-chumbo/10 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/5"
-            >
-              <button
-                onClick={() =>
-                  startTransition(() => {
-                    toggleActionItem(clientId, item.id, true);
-                  })
-                }
-                disabled={isPending}
-                title="Marcar como concluída"
-                className="h-5 w-5 shrink-0 rounded-full border-2 border-chumbo/30 hover:border-brand disabled:opacity-50 dark:border-white/30"
-              />
-              <div className="min-w-0 flex-1">
-                {item.objetivo && (
-                  <p className="text-xs font-semibold text-chumbo dark:text-white">{item.objetivo}</p>
-                )}
-                <p className="text-sm text-zinc-700 dark:text-zinc-200">{item.descricao}</p>
-                <p className="text-xs text-zinc-500">Até {formatDateOnly(item.data_prevista)}</p>
-              </div>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${badge}`}>
-                {label}
-              </span>
-              <button
-                onClick={() => startTransition(() => deleteActionItem(clientId, item.id))}
-                disabled={isPending}
-                className="shrink-0 text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
-              >
-                Remover
-              </button>
-            </li>
-          );
-        })}
-        {pendentes.length === 0 && (
-          <p className="text-sm text-zinc-500">Nenhuma ação pendente. Bom trabalho!</p>
-        )}
-      </ul>
-
-      {concluidos.length > 0 && (
-        <details className="text-sm">
-          <summary className="cursor-pointer text-zinc-500 hover:text-chumbo dark:hover:text-white">
-            Concluídas ({concluidos.length})
-          </summary>
-          <ul className="mt-2 flex flex-col gap-2">
-            {concluidos.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center gap-3 rounded-md border border-chumbo/10 bg-zinc-50 p-3 opacity-60 dark:border-white/10 dark:bg-white/5"
-              >
-                <button
-                  onClick={() =>
-                    startTransition(() => {
-                      toggleActionItem(clientId, item.id, false);
-                    })
-                  }
-                  disabled={isPending}
-                  title="Marcar como pendente"
-                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand text-xs text-chumbo disabled:opacity-50"
-                >
-                  ✓
-                </button>
-                <div className="min-w-0 flex-1">
-                  {item.objetivo && (
-                    <p className="text-xs font-semibold text-zinc-600 line-through dark:text-zinc-300">
-                      {item.objetivo}
-                    </p>
-                  )}
-                  <p className="text-sm text-zinc-700 line-through dark:text-zinc-200">
-                    {item.descricao}
-                  </p>
-                  <p className="text-xs text-zinc-500">Até {formatDateOnly(item.data_prevista)}</p>
-                </div>
-                <button
-                  onClick={() => startTransition(() => deleteActionItem(clientId, item.id))}
-                  disabled={isPending}
-                  className="shrink-0 text-xs text-red-600 hover:underline disabled:opacity-50 dark:text-red-400"
-                >
-                  Remover
-                </button>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
     </div>
   );
 }

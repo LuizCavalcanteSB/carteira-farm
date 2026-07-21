@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatCnpj } from "@/lib/cnpj";
 import { formatCpf } from "@/lib/cpf";
 import { formatDateOnly } from "@/lib/date";
+import { corDoAvatar, iniciaisDoNome } from "@/lib/avatar";
 import { ClientTabs } from "./client-tabs";
 import { BirthdayEditor } from "./birthday-editor";
 import { ClientInfoEditor } from "./client-info-editor";
@@ -116,52 +117,22 @@ export default async function ClientPage({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Pedidos" value={String(stats?.pedidos ?? 0)} />
-        <StatCard
-          label="Total comprado"
-          value={formatCurrency(stats?.total_comprado ?? 0)}
-        />
-        <StatCard
-          label="Ticket médio"
-          value={formatCurrency(stats?.ticket_medio ?? 0)}
-        />
-        <StatCard
-          label="Último pedido"
-          value={
-            stats?.ultimo_pedido
-              ? formatDateOnly(stats.ultimo_pedido)
-              : "—"
-          }
-        />
-      </div>
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[300px_1fr]">
+        <aside className="flex flex-col gap-4 rounded-lg border border-chumbo/10 bg-white p-4 text-sm shadow-sm lg:sticky lg:top-6 dark:border-white/10 dark:bg-chumbo-light">
+          <div className="flex flex-col items-center gap-2 border-b border-chumbo/10 pb-4 text-center dark:border-white/10">
+            <span
+              className={`flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold text-white ${corDoAvatar(client.nome)}`}
+            >
+              {iniciaisDoNome(client.nome)}
+            </span>
+            <p className="font-semibold text-chumbo dark:text-white">{client.nome}</p>
+            {(client.segmento || client.cidade) && (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                {[client.segmento, client.cidade].filter(Boolean).join(" · ")}
+              </p>
+            )}
+          </div>
 
-      <div className="rounded-lg border border-chumbo/10 bg-white p-4 text-sm shadow-sm dark:border-white/10 dark:bg-chumbo-light">
-        <ClientInfoEditor
-          clientId={client.id}
-          info={{
-            contato: client.contato,
-            comprador: client.comprador,
-            telefone: client.telefone,
-            email: client.email,
-            segmento: client.segmento,
-            cidade: client.cidade,
-            endereco: client.endereco,
-            situacao_cadastral: client.situacao_cadastral,
-            perfil_comprador: client.perfil_comprador as PerfilComprador | null,
-            porte: client.porte as Porte | null,
-          }}
-        />
-
-        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-chumbo/10 pt-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-white/10">
-          <Field
-            label="Primeira compra"
-            value={
-              client.historico_primeira_compra
-                ? formatDateOnly(client.historico_primeira_compra)
-                : null
-            }
-          />
           {isAdmin ? (
             <ConsultorEditor
               clientId={client.id}
@@ -171,29 +142,78 @@ export default async function ClientPage({
           ) : (
             <Field label="Consultor responsável" value={consultor?.nome} />
           )}
-          <BirthdayEditor
+
+          <hr className="border-chumbo/10 dark:border-white/10" />
+
+          <ClientInfoEditor
             clientId={client.id}
-            aniversarioEmpresa={client.aniversario_empresa}
+            info={{
+              contato: client.contato,
+              comprador: client.comprador,
+              telefone: client.telefone,
+              email: client.email,
+              segmento: client.segmento,
+              cidade: client.cidade,
+              endereco: client.endereco,
+              situacao_cadastral: client.situacao_cadastral,
+              perfil_comprador: client.perfil_comprador as PerfilComprador | null,
+              porte: client.porte as Porte | null,
+            }}
           />
-          <PrazoEntregaEditor
+
+          <hr className="border-chumbo/10 dark:border-white/10" />
+
+          <div className="flex flex-col gap-2.5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-brand-dark dark:text-brand">
+              Datas
+            </p>
+            {client.historico_primeira_compra && (
+              <Field
+                label="Primeira compra"
+                value={formatDateOnly(client.historico_primeira_compra)}
+              />
+            )}
+            <BirthdayEditor
+              clientId={client.id}
+              aniversarioEmpresa={client.aniversario_empresa}
+            />
+            <PrazoEntregaEditor
+              clientId={client.id}
+              prazoEntrega={client.prazo_entrega}
+            />
+          </div>
+        </aside>
+
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <StatCard label="Pedidos" value={String(stats?.pedidos ?? 0)} />
+            <StatCard
+              label="Total comprado"
+              value={formatCurrency(stats?.total_comprado ?? 0)}
+            />
+            <StatCard
+              label="Ticket médio"
+              value={formatCurrency(stats?.ticket_medio ?? 0)}
+            />
+            <StatCard
+              label="Último pedido"
+              value={
+                stats?.ultimo_pedido
+                  ? formatDateOnly(stats.ultimo_pedido)
+                  : "—"
+              }
+            />
+          </div>
+
+          <ClientTabs
             clientId={client.id}
-            prazoEntrega={client.prazo_entrega}
+            notes={notes ?? []}
+            orders={orders ?? []}
+            photos={photosWithUrls}
+            links={links ?? []}
+            actionItems={actionItems ?? []}
           />
         </div>
-      </div>
-
-      <div className="rounded-lg border border-chumbo/10 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-chumbo-light">
-        <p className="mb-3 text-sm font-semibold text-chumbo dark:text-white">
-          Atividades do cliente
-        </p>
-        <ClientTabs
-          clientId={client.id}
-          notes={notes ?? []}
-          orders={orders ?? []}
-          photos={photosWithUrls}
-          links={links ?? []}
-          actionItems={actionItems ?? []}
-        />
       </div>
     </div>
   );
@@ -209,10 +229,11 @@ function StatCard({ label, value }: { label: string; value: string }) {
 }
 
 function Field({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
   return (
     <div>
-      <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">{label}</p>
-      <p className="mt-0.5 text-chumbo dark:text-white">{value || "—"}</p>
+      <p className="text-[10.5px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="mt-0.5 text-sm font-medium text-chumbo dark:text-white">{value}</p>
     </div>
   );
 }

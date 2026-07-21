@@ -70,10 +70,28 @@ export function ClientInfoEditor({
     });
   }
 
+  const grupoContato = [
+    { label: LABELS.contato, value: values.contato },
+    { label: LABELS.comprador, value: values.comprador },
+    { label: LABELS.telefone, value: values.telefone },
+    { label: LABELS.email, value: values.email },
+  ].filter((f) => f.value);
+
+  const grupoCadastro = [
+    { label: LABELS.segmento, value: values.segmento },
+    { label: LABELS.cidade, value: values.cidade },
+    { label: LABELS.endereco, value: values.endereco },
+    { label: LABELS.situacao_cadastral, value: values.situacao_cadastral },
+    {
+      label: LABELS.perfil_comprador,
+      value: values.perfil_comprador ? PERFIL_COMPRADOR_LABEL[values.perfil_comprador] : null,
+    },
+    { label: LABELS.porte, value: values.porte ? PORTE_LABEL[values.porte] : null },
+  ].filter((f) => f.value);
+
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold text-chumbo dark:text-white">Informações do cliente</p>
         {editing ? (
           <div className="flex gap-2">
             <button
@@ -94,9 +112,9 @@ export function ClientInfoEditor({
         ) : (
           <button
             onClick={() => setEditing(true)}
-            className="rounded-md border border-chumbo/20 px-3 py-1.5 text-xs font-medium text-chumbo hover:bg-zinc-100 dark:border-white/20 dark:text-white dark:hover:bg-white/10"
+            className="text-xs font-semibold text-brand-dark hover:underline dark:text-brand"
           >
-            Editar
+            Editar informações
           </button>
         )}
       </div>
@@ -104,35 +122,35 @@ export function ClientInfoEditor({
       {error && <p className="mb-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {!editing && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <ReadOnlyField label={LABELS.contato} value={values.contato} />
-          <ReadOnlyField label={LABELS.comprador} value={values.comprador} />
-          <ReadOnlyField label={LABELS.telefone} value={values.telefone} />
-          <ReadOnlyField label={LABELS.email} value={values.email} />
-          <ReadOnlyField label={LABELS.segmento} value={values.segmento} />
-          <ReadOnlyField label={LABELS.cidade} value={values.cidade} />
-          <ReadOnlyField label={LABELS.endereco} value={values.endereco} />
-          <ReadOnlyField
-            label={LABELS.situacao_cadastral}
-            value={values.situacao_cadastral}
-          />
-          <ReadOnlyField
-            label={LABELS.perfil_comprador}
-            value={
-              values.perfil_comprador
-                ? PERFIL_COMPRADOR_LABEL[values.perfil_comprador]
-                : null
-            }
-          />
-          <ReadOnlyField
-            label={LABELS.porte}
-            value={values.porte ? PORTE_LABEL[values.porte] : null}
-          />
+        <div className="flex flex-col gap-4">
+          {grupoContato.length > 0 && (
+            <div className="flex flex-col gap-2.5">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-brand-dark dark:text-brand">
+                Contato
+              </p>
+              {grupoContato.map((f) => (
+                <ReadOnlyField key={f.label} label={f.label} value={f.value} />
+              ))}
+            </div>
+          )}
+          {grupoCadastro.length > 0 && (
+            <div className="flex flex-col gap-2.5">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-brand-dark dark:text-brand">
+                Cadastro
+              </p>
+              {grupoCadastro.map((f) => (
+                <ReadOnlyField key={f.label} label={f.label} value={f.value} />
+              ))}
+            </div>
+          )}
+          {grupoContato.length === 0 && grupoCadastro.length === 0 && (
+            <p className="text-sm text-zinc-500">Nenhuma informação preenchida ainda.</p>
+          )}
         </div>
       )}
 
       {editing && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-col gap-3">
           <InputField
             label={LABELS.contato}
             value={values.contato}
@@ -197,8 +215,8 @@ export function ClientInfoEditor({
 function ReadOnlyField({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
-      <p className="text-xs uppercase text-zinc-500 dark:text-zinc-400">{label}</p>
-      <p className="mt-0.5 text-chumbo dark:text-white">{value || "—"}</p>
+      <p className="text-[10.5px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="mt-0.5 text-sm font-medium text-chumbo dark:text-white">{value}</p>
     </div>
   );
 }
