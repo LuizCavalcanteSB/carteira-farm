@@ -53,9 +53,6 @@ async function calcularItensAtivos(
     .eq("na_carteira", false)
     .eq("estagio_contato", "contato_novo");
   if (!isAdmin) novoContatoQuery = novoContatoQuery.eq("consultant_id", userId);
-  const { data: novosContatos } = await fetchAllRows((from, to) =>
-    novoContatoQuery.range(from, to),
-  );
 
   let entregaQuery = supabase
     .from("clients")
@@ -63,22 +60,16 @@ async function calcularItensAtivos(
     .not("prazo_entrega", "is", null)
     .lte("prazo_entrega", limiteNotificacaoAntecedencia());
   if (!isAdmin) entregaQuery = entregaQuery.eq("consultant_id", userId);
-  const { data: entregas } = await fetchAllRows((from, to) =>
-    entregaQuery.range(from, to),
-  );
 
   // client_action_items já é protegido por RLS (só o próprio consultor ou
   // admin enxerga), então não precisa de um .eq("consultant_id", ...)
   // explícito aqui — diferente das outras queries acima, que consultam
   // `clients` diretamente e não têm essa mesma trava por padrão.
-  const { data: planosAcao } = await fetchAllRows((from, to) =>
-    supabase
-      .from("client_action_items")
-      .select("id, client_id, objetivo, descricao, data_prevista, cliente:clients(nome, consultant_id)")
-      .eq("concluido", false)
-      .lte("data_prevista", limiteNotificacaoAntecedencia())
-      .range(from, to),
-  );
+  const planoAcaoQuery = supabase
+    .from("client_action_items")
+    .select("id, client_id, objetivo, descricao, data_prevista, cliente:clients(nome, consultant_id)")
+    .eq("concluido", false)
+    .lte("data_prevista", limiteNotificacaoAntecedencia());
 
   let aniversarioQuery = supabase
     .from("clients")
@@ -86,9 +77,21 @@ async function calcularItensAtivos(
     .eq("na_carteira", true)
     .not("aniversario_empresa", "is", null);
   if (!isAdmin) aniversarioQuery = aniversarioQuery.eq("consultant_id", userId);
-  const { data: aniversarios } = await fetchAllRows((from, to) =>
-    aniversarioQuery.range(from, to),
-  );
+
+  // As 4 buscas não dependem uma da outra — rodar em sequência aqui era o
+  // maior gargalo de lentidão do sistema, já que este cálculo roda a cada
+  // navegação (o sino vive no layout compartilhado de todo o app).
+  const [
+    { data: novosContatos },
+    { data: entregas },
+    { data: planosAcao },
+    { data: aniversarios },
+  ] = await Promise.all([
+    fetchAllRows((from, to) => novoContatoQuery.range(from, to)),
+    fetchAllRows((from, to) => entregaQuery.range(from, to)),
+    fetchAllRows((from, to) => planoAcaoQuery.range(from, to)),
+    fetchAllRows((from, to) => aniversarioQuery.range(from, to)),
+  ]);
 
   const itensNovoContato: RawItem[] = (novosContatos ?? []).map((c) => {
     const dias = diasDesde(c.created_at as string);
@@ -161,28 +164,39 @@ async function sincronizarNotificacoes(
   isAdmin: boolean,
   itensAtivos: RawItem[],
 ): Promise<Map<string, { id: string; lida_em: string | null }>> {
-  const scopeConsultantIds = isAdmin
-    ? ((await supabase.from("profiles").select("id")).data ?? []).map((p) => p.id)
-    : [userId];
-
-  let upsertados: { id: string; chave: string; lida_em: string | null }[] = [];
-  if (itensAtivos.length > 0) {
-    const { data } = await supabase
-      .from("notificacoes")
-      .upsert(
-        itensAtivos.map((item) => ({
-          consultant_id: item.consultantId,
-          client_id: item.clientId,
-          kind: item.kind,
-          chave: item.chave,
-          mensagem: item.mensagem,
-          ativo: true,
-        })),
-        { onConflict: "consultant_id,chave" },
+  // Escopo (só precisa de uma busca extra pro admin) e o upsert não dependem
+  // um do outro — rodam em paralelo.
+  const scopePromise: Promise<string[]> = isAdmin
+    ? Promise.resolve(
+        supabase
+          .from("profiles")
+          .select("id")
+          .then(({ data }) => (data ?? []).map((p) => p.id)),
       )
-      .select("id, chave, lida_em");
-    upsertados = data ?? [];
-  }
+    : Promise.resolve([userId]);
+
+  const upsertPromise: Promise<{ id: string; chave: string; lida_em: string | null }[]> =
+    itensAtivos.length > 0
+      ? Promise.resolve(
+          supabase
+            .from("notificacoes")
+            .upsert(
+              itensAtivos.map((item) => ({
+                consultant_id: item.consultantId,
+                client_id: item.clientId,
+                kind: item.kind,
+                chave: item.chave,
+                mensagem: item.mensagem,
+                ativo: true,
+              })),
+              { onConflict: "consultant_id,chave" },
+            )
+            .select("id, chave, lida_em")
+            .then(({ data }) => data ?? []),
+        )
+      : Promise.resolve([]);
+
+  const [scopeConsultantIds, upsertados] = await Promise.all([scopePromise, upsertPromise]);
 
   const chavesAtivas = new Set(itensAtivos.map((item) => item.chave));
   const { data: existentesAtivas } = await supabase
